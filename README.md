@@ -1,0 +1,2 @@
+# TradingCardManagerExo
+Trading Card Manager
