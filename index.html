@@ -49,7 +49,65 @@ body {
   flex-direction: column;
   -webkit-tap-highlight-color: transparent;
   -webkit-text-size-adjust: 100%;
+  position: relative;
 }
+
+/* ===== TCG BACKGROUND IMAGES ===== */
+/* Fixed Vollbild-Hintergrund — beim Scrollen nicht mitwandern */
+body::before {
+  content: '';
+  position: fixed;
+  inset: 0;
+  z-index: -2;
+  background-size: cover;
+  background-position: center center;
+  background-repeat: no-repeat;
+  background-image: none;
+  opacity: 0;
+  transition: opacity 0.5s ease;
+  pointer-events: none;
+}
+/* Dunkles Overlay drüber, damit Karten lesbar bleiben */
+body::after {
+  content: '';
+  position: fixed;
+  inset: 0;
+  z-index: -1;
+  background: linear-gradient(180deg, rgba(12,14,26,0.82) 0%, rgba(12,14,26,0.92) 100%);
+  opacity: 0;
+  transition: opacity 0.5s ease;
+  pointer-events: none;
+}
+
+/* Nur sichtbar wenn App aktiv (nicht im Splash) */
+body.app-active.tcg-pk::before { background-image: url('bg-pokemon.jpg'); opacity: 1; }
+body.app-active.tcg-op::before { background-image: url('bg-onepiece.jpg'); opacity: 1; }
+body.app-active.tcg-yg::before { background-image: url('bg-yugioh.jpg'); opacity: 1; }
+body.app-active.tcg-pk::after,
+body.app-active.tcg-op::after,
+body.app-active.tcg-yg::after { opacity: 1; }
+
+/* Panels leicht transparent, damit Hintergrund durchschimmert */
+body.app-active.tcg-pk,
+body.app-active.tcg-op,
+body.app-active.tcg-yg {
+  background: transparent;
+}
+body.app-active.tcg-pk .main-content,
+body.app-active.tcg-op .main-content,
+body.app-active.tcg-yg .main-content { background: transparent; }
+body.app-active.tcg-pk .sidebar,
+body.app-active.tcg-op .sidebar,
+body.app-active.tcg-yg .sidebar { background: rgba(18,21,38,0.75); backdrop-filter: blur(8px); -webkit-backdrop-filter: blur(8px); }
+body.app-active.tcg-pk .main-topbar,
+body.app-active.tcg-op .main-topbar,
+body.app-active.tcg-yg .main-topbar { background: rgba(18,21,38,0.75); backdrop-filter: blur(8px); -webkit-backdrop-filter: blur(8px); }
+body.app-active.tcg-pk .stats-bar,
+body.app-active.tcg-op .stats-bar,
+body.app-active.tcg-yg .stats-bar { background: rgba(18,21,38,0.7); backdrop-filter: blur(8px); -webkit-backdrop-filter: blur(8px); }
+body.app-active.tcg-pk .mobile-header,
+body.app-active.tcg-op .mobile-header,
+body.app-active.tcg-yg .mobile-header { background: rgba(18,21,38,0.8); backdrop-filter: blur(8px); -webkit-backdrop-filter: blur(8px); }
 
 /* ===== SPLASH ===== */
 #splash {
@@ -1444,6 +1502,7 @@ function enterApp(tcg) {
   splash.classList.add('out');
   state.activeTcg = tcg;
   setAccent(tcg);
+  setTcgBackground(tcg);
   setTimeout(() => {
     splash.style.display = 'none';
     const app = document.getElementById('app');
@@ -1451,17 +1510,6 @@ function enterApp(tcg) {
     document.body.classList.add('app-active');
     renderAll();
   }, 500);
-}
-
-function switchTcg(tcg) {
-  state.activeTcg = tcg;
-  state.selectedIdx = null;
-  setAccent(tcg);
-  document.querySelectorAll('.tcg-nav-item').forEach(el => {
-    el.classList.toggle('active', el.dataset.tcg === tcg);
-  });
-  closeDetail();
-  renderAll();
 }
 
 function goHome() {
@@ -1655,9 +1703,16 @@ function switchTcg(tcg) {
   state.activeTcg = tcg;
   state.selectedIdx = null;
   setAccent(tcg);
+  setTcgBackground(tcg);
   updateNavActive();
   closeDetail();
   renderAll();
+}
+
+// Setzt die Hintergrund-Klasse am body abhängig vom aktiven TCG
+function setTcgBackground(tcg) {
+  document.body.classList.remove('tcg-pk', 'tcg-op', 'tcg-yg');
+  document.body.classList.add('tcg-' + tcg);
 }
 
 // Override deleteItem for new UI
