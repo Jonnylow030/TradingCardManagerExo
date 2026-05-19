@@ -567,6 +567,30 @@ body.app-active.tcg-yg .mobile-header { background: rgba(18,21,38,0.8); backdrop
   border-color: rgba(255,200,80,0.3);
 }
 .lookup-btn i { font-size: 13px; flex-shrink: 0; }
+
+/* Rarity-Multi-Select als Chips */
+.rarity-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(140px, 1fr));
+  gap: 6px;
+}
+.rarity-chip {
+  display: flex; align-items: center; gap: 6px;
+  padding: 8px 10px;
+  background: rgba(255,255,255,0.04);
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  cursor: pointer; transition: all 0.15s;
+  font-size: 12px; font-weight: 500;
+  user-select: none;
+}
+.rarity-chip input { margin: 0; cursor: pointer; }
+.rarity-chip:hover { background: rgba(255,255,255,0.07); }
+.rarity-chip:has(input:checked) {
+  background: rgba(250,200,80,0.15);
+  border-color: rgba(250,200,80,0.4);
+  color: #fbbf24;
+}
 .detail-fields {
   display: grid; grid-template-columns: 1fr 1fr; gap: 6px; margin-bottom: 14px;
 }
@@ -1068,16 +1092,17 @@ body:has(#app.show) .mobile-header { /* placeholder; eigentliche Regel in @media
         <input type="text" class="form-control" id="f_name" placeholder="z.B. Glurak ex Special Art" required>
       </div>
       <div class="form-group" id="rarityGroup">
-        <label class="form-label">Rarität</label>
-        <select class="form-control" id="f_rarity">
-          <option value="">— keine Angabe —</option>
-          <option value="Unlimited">Unlimited</option>
-          <option value="1. Edition">1. Edition</option>
-          <option value="SAR">SAR</option>
-          <option value="IR">IR</option>
-          <option value="Reverse Holo">Reverse Holo</option>
-          <option value="Holo">Holo</option>
-        </select>
+        <label class="form-label">Rarität <span class="form-hint" style="display:inline">(Mehrfachauswahl möglich)</span></label>
+        <div class="rarity-grid" id="f_rarity_grid">
+          <label class="rarity-chip"><input type="checkbox" value="Unlimited"><span>Unlimited</span></label>
+          <label class="rarity-chip"><input type="checkbox" value="1. Edition"><span>1. Edition</span></label>
+          <label class="rarity-chip"><input type="checkbox" value="Holo"><span>Holo</span></label>
+          <label class="rarity-chip"><input type="checkbox" value="Reverse Holo"><span>Reverse Holo</span></label>
+          <label class="rarity-chip"><input type="checkbox" value="Reverse Holo Stamp"><span>Reverse Holo Stamp</span></label>
+          <label class="rarity-chip"><input type="checkbox" value="IR"><span>IR</span></label>
+          <label class="rarity-chip"><input type="checkbox" value="SAR"><span>SAR</span></label>
+          <label class="rarity-chip"><input type="checkbox" value="Alternative Art"><span>Alternative Art</span></label>
+        </div>
       </div>
       <div class="form-group" id="cardNumberGroup">
         <label class="form-label">Nummer der Karte</label>
@@ -1752,7 +1777,7 @@ async function saveItem(e) {
     type, name,
     cardNumber: document.getElementById("f_cardnumber").value.trim(),
     setName: document.getElementById("f_set_name").value,
-    rarity: document.getElementById("f_rarity")?.value || "",
+    rarity: Array.from(document.querySelectorAll('#f_rarity_grid input:checked')).map(c => c.value).join(', '),
     condition: getCondition(type),
     lang: document.getElementById("f_lang").value,
     value: currentValue,
@@ -1888,7 +1913,7 @@ function buildItemSearchString(item) {
   const parts = [];
   if (item.name) parts.push(item.name);
   if (item.setName) parts.push(item.setName);
-  if (item.rarity) parts.push(item.rarity);
+  if (item.rarity) parts.push(item.rarity.replace(/,/g, '')); // mehrere Raritäten ohne Komma im Suchstring
   if (item.cardNumber) parts.push(item.cardNumber);
   if (item.lang) parts.push(item.lang);
   // Bei Graded: condition enthält schon "PSA 10" o.ä. – einfach übernehmen
