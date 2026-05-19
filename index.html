@@ -160,15 +160,17 @@ body.app-active.tcg-yg .mobile-header { background: rgba(18,21,38,0.8); backdrop
   to { opacity: 1; transform: scale(1); }
 }
 
-/* Splash auf Smartphones: Vollbild, Logo mit Randabstand */
+/* Splash auf Smartphones: Vollbild mit Randabstand */
 @media (max-width: 768px) {
   #splash {
     /* Hintergrundfarbe passend zum Bild (dunkelblau) */
     background: #0c1828;
   }
   #splash::before {
+    inset: 20px;
     background-size: cover;
     background-position: center center;
+    border-radius: 12px;
   }
 }
 
