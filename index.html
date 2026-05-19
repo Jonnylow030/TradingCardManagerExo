@@ -2171,16 +2171,17 @@ function enterApp(tcg) {
   setTimeout(() => {
     splash.style.display = 'none';
     const app = document.getElementById('app');
+    app.style.display = '';  // inline-style aus goHome() zurücksetzen
     app.classList.add('show');
     document.body.classList.add('app-active');
     renderAll();
+    updateTotalValue();
   }, 500);
 }
 
 function goHome() {
   const app = document.getElementById('app');
   app.classList.remove('show');
-  app.style.display = 'none';
   document.body.classList.remove('app-active');
   const splash = document.getElementById('splash');
   splash.style.display = 'flex';
