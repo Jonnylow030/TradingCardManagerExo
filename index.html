@@ -6,6 +6,7 @@
 <title>Trading Card Manager EXO</title>
 <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@tabler/icons-webfont@latest/dist/tabler-icons.min.css">
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
 <link href="https://fonts.googleapis.com/css2?family=Sora:wght@300;400;500;600;700;800&family=JetBrains+Mono:wght@400;600&display=swap" rel="stylesheet">
 <style>
 /* ===== RESET & BASE ===== */
@@ -479,6 +480,27 @@ body.app-active.tcg-yg .mobile-header { background: rgba(18,21,38,0.8); backdrop
 }
 .detail-profit {
   font-size: 11px; font-weight: 600; margin-top: 2px;
+}
+.update-value-btn {
+  width: 100%; margin: 10px 0 14px; padding: 10px 14px;
+  background: var(--accent-dim); border: 1px solid var(--accent-glow);
+  color: var(--accent); border-radius: 8px;
+  font-family: 'Sora', sans-serif; font-size: 12px; font-weight: 600;
+  cursor: pointer; transition: all 0.18s;
+  display: flex; align-items: center; justify-content: center; gap: 6px;
+}
+.update-value-btn:hover { background: var(--accent-glow); }
+.update-value-btn i { font-size: 16px; }
+.value-chart-wrap {
+  background: var(--bg-card); border: 1px solid var(--border);
+  border-radius: 10px; padding: 12px; margin-bottom: 14px;
+}
+.value-chart-label {
+  font-size: 9px; text-transform: uppercase; letter-spacing: 1.5px;
+  color: var(--text-3); font-weight: 700; margin-bottom: 8px;
+}
+.value-chart-canvas-wrap {
+  position: relative; height: 180px; width: 100%;
 }
 .detail-fields {
   display: grid; grid-template-columns: 1fr 1fr; gap: 6px; margin-bottom: 14px;
@@ -1015,6 +1037,10 @@ body:has(#app.show) .mobile-header { /* placeholder; eigentliche Regel in @media
           <input type="number" class="form-control" id="f_purchase" placeholder="0.00" step="0.01" min="0">
         </div>
       </div>
+      <div class="form-group" id="purchaseDateGroup">
+        <label class="form-label">Kaufdatum</label>
+        <input type="date" class="form-control" id="f_purchase_date">
+      </div>
       <div class="form-group">
         <label class="form-label">Bild hochladen</label>
         <div class="img-upload-area card-raw" id="uploadArea" onclick="document.getElementById('f_img').click()">
@@ -1328,17 +1354,19 @@ async function loadData() {
       if (!data[row.tcg]) data[row.tcg] = {};
       if (!data[row.tcg][row.section]) data[row.tcg][row.section] = [];
       data[row.tcg][row.section].push({
-        id:         row.id,
-        type:       row.type,
-        name:       row.name,
-        cardNumber: row.card_number,
-        setName:    row.set_name,
-        rarity:     row.rarity,
-        condition:  row.condition,
-        lang:       row.lang,
-        value:      row.value,
-        purchase:   row.purchase,
-        imgData:    row.img_data
+        id:           row.id,
+        type:         row.type,
+        name:         row.name,
+        cardNumber:   row.card_number,
+        setName:      row.set_name,
+        rarity:       row.rarity,
+        condition:    row.condition,
+        lang:         row.lang,
+        value:        row.value,
+        purchase:     row.purchase,
+        purchaseDate: row.purchase_date,
+        valueHistory: row.value_history,
+        imgData:      row.img_data
       });
     });
   } catch(e) {
@@ -1369,19 +1397,21 @@ async function saveData() {
 
 function itemToRow(item, tcg, section) {
   return {
-    id:          item.id,
-    tcg:         tcg,
-    section:     section,
-    type:        item.type,
-    name:        item.name,
-    card_number: item.cardNumber || null,
-    set_name:    item.setName || null,
-    rarity:      item.rarity || null,
-    condition:   item.condition || null,
-    lang:        item.lang || null,
-    value:       parseFloat(item.value) || 0,
-    purchase:    item.purchase ? parseFloat(item.purchase) : null,
-    img_data:    item.imgData || null
+    id:            item.id,
+    tcg:           tcg,
+    section:       section,
+    type:          item.type,
+    name:          item.name,
+    card_number:   item.cardNumber || null,
+    set_name:      item.setName || null,
+    rarity:        item.rarity || null,
+    condition:     item.condition || null,
+    lang:          item.lang || null,
+    value:         parseFloat(item.value) || 0,
+    purchase:      item.purchase ? parseFloat(item.purchase) : null,
+    purchase_date: item.purchaseDate || null,
+    value_history: item.valueHistory || null,
+    img_data:      item.imgData || null
   };
 }
 
@@ -1540,6 +1570,27 @@ async function saveItem(e) {
   const type = document.getElementById("f_type").value;
   const name = document.getElementById("f_name").value.trim(); if (!name) return;
   const newId = Date.now() * 1000 + Math.floor(Math.random() * 1000);
+  const today = new Date().toISOString().slice(0, 10);
+  const purchaseDate = document.getElementById("f_purchase_date")?.value || "";
+  const purchasePrice = document.getElementById("f_purchase")?.value || "";
+  const currentValue = document.getElementById("f_value").value;
+  // Wert-Verlauf initialisieren: Kaufpreis (an Kaufdatum) und aktueller Wert (heute)
+  const history = [];
+  if (purchasePrice && purchaseDate) {
+    history.push({ date: purchaseDate, value: parseFloat(purchasePrice) });
+  }
+  if (currentValue) {
+    // Wenn Kaufdatum = heute, nur einen Punkt einfügen
+    if (purchaseDate !== today || !purchasePrice) {
+      history.push({ date: today, value: parseFloat(currentValue) });
+    } else {
+      // Kaufdatum = heute: dann ist aktueller Wert ein zweiter Punkt am gleichen Tag,
+      // nur einfügen wenn Wert vom Kaufpreis abweicht
+      if (parseFloat(currentValue) !== parseFloat(purchasePrice)) {
+        history.push({ date: today, value: parseFloat(currentValue) });
+      }
+    }
+  }
   const item = {
     type, name,
     cardNumber: document.getElementById("f_cardnumber").value.trim(),
@@ -1547,8 +1598,10 @@ async function saveItem(e) {
     rarity: document.getElementById("f_rarity")?.value || "",
     condition: getCondition(type),
     lang: document.getElementById("f_lang").value,
-    value: document.getElementById("f_value").value,
-    purchase: document.getElementById("f_purchase")?.value||"",
+    value: currentValue,
+    purchase: purchasePrice,
+    purchaseDate: purchaseDate || null,
+    valueHistory: history.length > 0 ? history : null,
     imgData: imgBase64, id: newId
   };
   const tcg = state.activeTcg, section = state.activeSection;
@@ -1561,6 +1614,56 @@ async function saveItem(e) {
   } else {
     showSaveStatus('Fehler beim Speichern!', true);
   }
+}
+
+// Aktuellen Wert eines Items aktualisieren und neuen History-Punkt hinzufügen
+async function updateItemValue(idx, newValue) {
+  const items = getItems(state.activeTcg, state.activeSection);
+  const item = items[idx];
+  if (!item) return;
+  const val = parseFloat(newValue);
+  if (isNaN(val) || val < 0) {
+    alert('Bitte einen gültigen Wert eingeben.');
+    return;
+  }
+  const today = new Date().toISOString().slice(0, 10);
+  const history = Array.isArray(item.valueHistory) ? [...item.valueHistory] : [];
+  // Wenn heute schon ein Eintrag existiert, überschreiben statt neu anlegen
+  const lastIdx = history.length - 1;
+  if (lastIdx >= 0 && history[lastIdx].date === today) {
+    history[lastIdx] = { date: today, value: val };
+  } else {
+    history.push({ date: today, value: val });
+  }
+  item.value = String(val);
+  item.valueHistory = history;
+  renderContent(); updateTotalValue();
+  // Detail-Ansicht neu rendern
+  if (typeof showDetailPanel === 'function' && document.getElementById('detailPanel') && !document.getElementById('detailPanel').classList.contains('hidden')) {
+    showDetailPanel(idx);
+  }
+  if (document.getElementById('detailModal') && document.getElementById('detailModal').style.display === 'flex') {
+    showDetail(idx);
+  }
+  showSaveStatus('Speichere…');
+  const ok = await saveOneItem(item, state.activeTcg, state.activeSection);
+  if (ok) {
+    showSaveStatus('Aktualisiert ✓');
+  } else {
+    showSaveStatus('Fehler beim Speichern!', true);
+  }
+}
+
+// Prompt für neuen Wert öffnen
+function promptNewValue(idx) {
+  const items = getItems(state.activeTcg, state.activeSection);
+  const item = items[idx];
+  if (!item) return;
+  const cur = parseFloat(item.value) || 0;
+  const input = prompt(`Neuen aktuellen Wert eingeben (in €):`, cur.toFixed(2));
+  if (input === null || input.trim() === '') return;
+  const normalized = input.trim().replace(',', '.');
+  updateItemValue(idx, normalized);
 }
 
 function populateSetDropdown() {
@@ -1600,10 +1703,15 @@ function showDetail(idx) {
   document.getElementById("detailModalTitle").textContent = item.name;
   const profit = (parseFloat(item.value)||0)-(parseFloat(item.purchase)||0);
   const hasProfit = item.purchase && parseFloat(item.purchase)>0;
+  const hasHistory = Array.isArray(item.valueHistory) && item.valueHistory.length >= 1;
+  const chartId = "detailChart_" + idx;
+  const fmtDate = (d) => { if (!d) return ''; const dt = new Date(d); return isNaN(dt) ? d : dt.toLocaleDateString('de-DE'); };
   document.getElementById("detailContent").innerHTML = `
     ${item.imgData?`<div class="detail-img-wrap"><img class="detail-img" src="${item.imgData}" alt="${item.name}"></div>`:""}
     <div class="detail-value">${parseFloat(item.value).toFixed(2)} €</div>
     ${hasProfit?`<div class="detail-profit" style="color:${profit>=0?"#4ade80":"#f87171"};margin-bottom:14px">${profit>=0?"▲":"▼"} ${Math.abs(profit).toFixed(2)} € ${profit>=0?"Gewinn":"Verlust"} · EK: ${parseFloat(item.purchase).toFixed(2)} €</div>`:""}
+    <button class="update-value-btn" onclick="promptNewValue(${idx})"><i class="ti ti-trending-up"></i> Aktuellen Wert aktualisieren</button>
+    ${hasHistory?`<div class="value-chart-wrap"><div class="value-chart-label">Wertverlauf</div><div class="value-chart-canvas-wrap"><canvas id="${chartId}"></canvas></div></div>`:""}
     <div class="detail-grid">
       <div class="detail-field"><div class="detail-field-label">Art</div><div class="detail-field-val">${item.type}</div></div>
       <div class="detail-field"><div class="detail-field-label">Sprache</div><div class="detail-field-val">${item.lang}</div></div>
@@ -1612,12 +1720,91 @@ function showDetail(idx) {
       ${item.rarity?`<div class="detail-field"><div class="detail-field-label">Rarität</div><div class="detail-field-val">${item.rarity}</div></div>`:""}
       <div class="detail-field"><div class="detail-field-label">Zustand</div><div class="detail-field-val">${item.condition}</div></div>
       ${item.purchase?`<div class="detail-field"><div class="detail-field-label">Einkaufspreis</div><div class="detail-field-val">${parseFloat(item.purchase).toFixed(2)} €</div></div>`:""}
+      ${item.purchaseDate?`<div class="detail-field"><div class="detail-field-label">Kaufdatum</div><div class="detail-field-val">${fmtDate(item.purchaseDate)}</div></div>`:""}
     </div>
     <button class="delete-btn" onclick="deleteItem(${idx})"><i class="ti ti-trash" aria-hidden="true"></i> Item löschen</button>`;
   document.getElementById("detailModal").style.display = "flex";
+  if (hasHistory) {
+    setTimeout(() => renderValueChart(chartId, item), 50);
+  }
 }
 
 function closeDetailModal() { document.getElementById("detailModal").style.display = "none"; }
+
+// Hält aktuelle Chart-Instanzen, damit sie beim Re-Render zerstört werden können
+const _chartInstances = {};
+
+function destroyChart(canvasId) {
+  if (_chartInstances[canvasId]) {
+    try { _chartInstances[canvasId].destroy(); } catch(e) {}
+    delete _chartInstances[canvasId];
+  }
+}
+
+// Wertverlauf-Chart in ein Canvas-Element zeichnen
+function renderValueChart(canvasId, item) {
+  const canvas = document.getElementById(canvasId);
+  if (!canvas || typeof Chart === 'undefined') return;
+  destroyChart(canvasId);
+  const history = Array.isArray(item.valueHistory) ? item.valueHistory.slice() : [];
+  if (history.length === 0) return;
+  // Nach Datum sortieren
+  history.sort((a, b) => (a.date || '').localeCompare(b.date || ''));
+  const labels = history.map(h => {
+    const d = new Date(h.date);
+    return isNaN(d) ? h.date : d.toLocaleDateString('de-DE', { day: '2-digit', month: '2-digit', year: '2-digit' });
+  });
+  const values = history.map(h => parseFloat(h.value) || 0);
+  const first = values[0], last = values[values.length - 1];
+  const isUp = last >= first;
+  const lineColor = isUp ? '#4ade80' : '#f87171';
+  const fillColor = isUp ? 'rgba(74,222,128,0.15)' : 'rgba(248,113,113,0.15)';
+  const ctx = canvas.getContext('2d');
+  _chartInstances[canvasId] = new Chart(ctx, {
+    type: 'line',
+    data: {
+      labels,
+      datasets: [{
+        data: values,
+        borderColor: lineColor,
+        backgroundColor: fillColor,
+        borderWidth: 2,
+        fill: true,
+        tension: 0.25,
+        pointRadius: history.length <= 12 ? 4 : 2,
+        pointBackgroundColor: lineColor,
+        pointBorderColor: '#fff',
+        pointBorderWidth: 1,
+        pointHoverRadius: 6
+      }]
+    },
+    options: {
+      responsive: true,
+      maintainAspectRatio: false,
+      plugins: {
+        legend: { display: false },
+        tooltip: {
+          callbacks: {
+            label: (ctx) => `${ctx.parsed.y.toFixed(2)} €`
+          }
+        }
+      },
+      scales: {
+        x: {
+          ticks: { color: 'rgba(255,255,255,0.5)', font: { size: 10 }, maxRotation: 0, autoSkip: true, maxTicksLimit: 6 },
+          grid: { color: 'rgba(255,255,255,0.05)' }
+        },
+        y: {
+          ticks: {
+            color: 'rgba(255,255,255,0.5)', font: { size: 10 },
+            callback: v => v.toFixed(0) + ' €'
+          },
+          grid: { color: 'rgba(255,255,255,0.05)' }
+        }
+      }
+    }
+  });
+}
 
 async function deleteItem(idx) {
   if (!confirm("Item wirklich löschen?")) return;
@@ -1823,6 +2010,9 @@ function showDetailPanel(idx) {
   panel.classList.remove('hidden');
   const profit = (parseFloat(item.value)||0) - (parseFloat(item.purchase)||0);
   const hasProfit = item.purchase && parseFloat(item.purchase) > 0;
+  const hasHistory = Array.isArray(item.valueHistory) && item.valueHistory.length >= 1;
+  const chartId = "panelChart_" + idx;
+  const fmtDate = (d) => { if (!d) return ''; const dt = new Date(d); return isNaN(dt) ? d : dt.toLocaleDateString('de-DE'); };
   document.getElementById('detailScroll').innerHTML = `
     <div class="detail-title">${item.name}</div>
     <div class="detail-type-row">${item.type}${item.setName ? ` · ${item.setName}` : ''}${item.cardNumber ? ` – ${item.cardNumber}` : ''}</div>
@@ -1831,6 +2021,8 @@ function showDetailPanel(idx) {
       <div class="detail-value">${parseFloat(item.value).toFixed(2)} €</div>
       ${hasProfit ? `<div class="detail-profit" style="color:${profit>=0?'#4ade80':'#f87171'}">${profit>=0?'▲':'▼'} ${Math.abs(profit).toFixed(2)} € ${profit>=0?'Gewinn':'Verlust'} · EK: ${parseFloat(item.purchase).toFixed(2)} €</div>` : ''}
     </div>
+    <button class="update-value-btn" onclick="promptNewValue(${idx})"><i class="ti ti-trending-up"></i> Aktuellen Wert aktualisieren</button>
+    ${hasHistory?`<div class="value-chart-wrap"><div class="value-chart-label">Wertverlauf</div><div class="value-chart-canvas-wrap"><canvas id="${chartId}"></canvas></div></div>`:""}
     <div class="detail-fields">
       <div class="dfield"><div class="dfield-label">Art des Items</div><div class="dfield-val">${item.type}</div></div>
       <div class="dfield"><div class="dfield-label">Sprache</div><div class="dfield-val">${item.lang||'—'}</div></div>
@@ -1839,6 +2031,7 @@ function showDetailPanel(idx) {
       ${item.rarity ? `<div class="dfield"><div class="dfield-label">Rarität</div><div class="dfield-val">${item.rarity}</div></div>` : ''}
       <div class="dfield"><div class="dfield-label">Zustand</div><div class="dfield-val">${item.condition||'—'}</div></div>
       ${item.purchase ? `<div class="dfield"><div class="dfield-label">Einkaufspreis</div><div class="dfield-val">${parseFloat(item.purchase).toFixed(2)} €</div></div>` : ''}
+      ${item.purchaseDate ? `<div class="dfield"><div class="dfield-label">Kaufdatum</div><div class="dfield-val">${fmtDate(item.purchaseDate)}</div></div>` : ''}
     </div>
     <div class="detail-tags-section">
       <div class="detail-tags-label">Tags</div>
@@ -1853,6 +2046,9 @@ function showDetailPanel(idx) {
     <button class="daction-btn" onclick="closeDetail()">Schließen</button>
     <button class="daction-btn danger" onclick="deleteItem(${idx})"><i class="ti ti-trash"></i> Löschen</button>
   `;
+  if (hasHistory) {
+    setTimeout(() => renderValueChart(chartId, item), 50);
+  }
 }
 
 function switchSection(sec) {
