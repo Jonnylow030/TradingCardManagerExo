@@ -160,16 +160,15 @@ body.app-active.tcg-yg .mobile-header { background: rgba(18,21,38,0.8); backdrop
   to { opacity: 1; transform: scale(1); }
 }
 
-/* Splash auf Smartphones: Vollbild mit Randabstand */
+/* Splash auf Smartphones: separates Bild, vollflächig ohne Ränder */
 @media (max-width: 768px) {
   #splash {
     background: #0c1828;
   }
   #splash::before {
-    inset: 20px;
+    background-image: url('splash1.jpg');
     background-size: cover;
     background-position: center center;
-    border-radius: 12px;
   }
 }
 
