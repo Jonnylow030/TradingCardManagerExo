@@ -534,6 +534,39 @@ body.app-active.tcg-yg .mobile-header { background: rgba(18,21,38,0.8); backdrop
 .value-chart-canvas-wrap {
   position: relative; height: 180px; width: 100%;
 }
+/* Lookup-Buttons für Marktwert-Recherche bei value=0 */
+.lookup-box {
+  background: rgba(255,200,80,0.06);
+  border: 1px solid rgba(255,200,80,0.18);
+  border-radius: 10px;
+  padding: 10px 12px;
+  margin-bottom: 12px;
+}
+.lookup-box-label {
+  font-size: 9px; text-transform: uppercase; letter-spacing: 1.5px;
+  color: #fbbf24; font-weight: 700; margin-bottom: 8px;
+}
+.lookup-btns {
+  display: flex; gap: 6px; margin-top: 8px;
+}
+.card-tile .lookup-btns { margin-top: 6px; }
+.lookup-btn {
+  flex: 1; padding: 7px 8px;
+  background: rgba(255,255,255,0.05);
+  border: 1px solid rgba(255,255,255,0.1);
+  color: var(--text);
+  border-radius: 6px;
+  font-family: 'Sora', sans-serif;
+  font-size: 10px; font-weight: 600;
+  cursor: pointer; transition: all 0.15s;
+  display: flex; align-items: center; justify-content: center; gap: 4px;
+  white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+}
+.lookup-btn:hover {
+  background: rgba(255,200,80,0.12);
+  border-color: rgba(255,200,80,0.3);
+}
+.lookup-btn i { font-size: 13px; flex-shrink: 0; }
 .detail-fields {
   display: grid; grid-template-columns: 1fr 1fr; gap: 6px; margin-bottom: 14px;
 }
@@ -1073,7 +1106,7 @@ body:has(#app.show) .mobile-header { /* placeholder; eigentliche Regel in @media
       <div class="row2">
         <div class="form-group">
           <label class="form-label">Aktueller Wert (€)</label>
-          <input type="number" class="form-control" id="f_value" placeholder="0.00" step="0.01" min="0" required>
+          <input type="number" class="form-control" id="f_value" placeholder="0.00 (optional)" step="0.01" min="0">
         </div>
         <div class="form-group" id="purchaseGroup">
           <label class="form-label">Einkaufspreis (€)</label>
@@ -1850,6 +1883,67 @@ function totalCosts(item) {
          (parseFloat(item.gradingCost)||0);
 }
 
+// Such-String für ein Item bauen (Reihenfolge: Name SET Rarität Nummer Sprache Zustand/Grading)
+function buildItemSearchString(item) {
+  const parts = [];
+  if (item.name) parts.push(item.name);
+  if (item.setName) parts.push(item.setName);
+  if (item.rarity) parts.push(item.rarity);
+  if (item.cardNumber) parts.push(item.cardNumber);
+  if (item.lang) parts.push(item.lang);
+  // Bei Graded: condition enthält schon "PSA 10" o.ä. – einfach übernehmen
+  if (item.condition) parts.push(item.condition);
+  return parts.join(' ');
+}
+
+// In Zwischenablage kopieren, mit Fallback für ältere Browser
+function copyItemString(idx, evt) {
+  if (evt) evt.stopPropagation();
+  const items = getItems(state.activeTcg, state.activeSection);
+  const item = items[idx];
+  if (!item) return;
+  const text = buildItemSearchString(item);
+  const finish = () => showSaveStatus('Kopiert: ' + text.slice(0, 40) + (text.length > 40 ? '…' : ''));
+  if (navigator.clipboard && navigator.clipboard.writeText) {
+    navigator.clipboard.writeText(text).then(finish).catch(() => {
+      // Fallback
+      const ta = document.createElement('textarea');
+      ta.value = text; document.body.appendChild(ta);
+      ta.select(); try { document.execCommand('copy'); } catch(e) {}
+      document.body.removeChild(ta);
+      finish();
+    });
+  } else {
+    const ta = document.createElement('textarea');
+    ta.value = text; document.body.appendChild(ta);
+    ta.select(); try { document.execCommand('copy'); } catch(e) {}
+    document.body.removeChild(ta);
+    finish();
+  }
+}
+
+// Öffnet die passende Markt-Seite je nach Item-Typ
+function openMarketSearch(idx, evt) {
+  if (evt) evt.stopPropagation();
+  const items = getItems(state.activeTcg, state.activeSection);
+  const item = items[idx];
+  if (!item) return;
+  let url;
+  if (item.type === 'Karte Graded') {
+    // eBay.de – nur verkaufte (LH_Sold=1) und beendete (LH_Complete=1).
+    // Voller Suchstring, weil eBay damit gut umgehen kann.
+    const query = encodeURIComponent(buildItemSearchString(item));
+    url = `https://www.ebay.de/sch/i.html?_nkw=${query}&LH_Sold=1&LH_Complete=1`;
+  } else {
+    // Cardmarket – Suche nur mit dem Namen, da CM keine Volltextsuche mit Details kennt.
+    // Der User filtert dann Set/Sprache/Zustand auf der Ergebnisseite.
+    const cmCat = { pk: 'Pokemon', op: 'OnePiece', yg: 'YuGiOh' }[state.activeTcg] || 'Pokemon';
+    const query = encodeURIComponent(item.name || '');
+    url = `https://www.cardmarket.com/de/${cmCat}/Products/Search?searchString=${query}`;
+  }
+  window.open(url, '_blank', 'noopener');
+}
+
 function populateSetDropdown() {
   const sets = TCG_CONFIG[state.activeTcg].sets;
   document.getElementById("setDropdown").innerHTML = sets.map(s =>
@@ -1895,6 +1989,14 @@ function showDetail(idx) {
     ${item.imgData?`<div class="detail-img-wrap"><img class="detail-img" src="${item.imgData}" alt="${item.name}"></div>`:""}
     <div class="detail-value">${parseFloat(item.value).toFixed(2)} €</div>
     ${hasCosts?`<div class="detail-profit" style="color:${profit>=0?"#4ade80":"#f87171"};margin-bottom:14px">${profit>=0?"▲":"▼"} ${Math.abs(profit).toFixed(2)} € ${profit>=0?"Gewinn":"Verlust"} · Gesamtkosten: ${costs.toFixed(2)} €</div>`:""}
+    ${(parseFloat(item.value)||0) === 0 ? `
+      <div class="lookup-box">
+        <div class="lookup-box-label">Marktwert ermitteln</div>
+        <div class="lookup-btns">
+          <button class="lookup-btn" onclick="copyItemString(${idx}, event)"><i class="ti ti-copy"></i> Suchstring kopieren</button>
+          <button class="lookup-btn" onclick="openMarketSearch(${idx}, event)"><i class="ti ti-external-link"></i> ${item.type === 'Karte Graded' ? 'eBay Last Solds' : 'Cardmarket öffnen'}</button>
+        </div>
+      </div>` : ''}
     <button class="update-value-btn" onclick="promptNewValue(${idx})"><i class="ti ti-trending-up"></i> Aktuellen Wert aktualisieren</button>
     <button class="update-value-btn" onclick="openEditCostsModal(${idx})" style="margin-top:-6px"><i class="ti ti-edit"></i> Kosten bearbeiten</button>
     ${hasHistory?`<div class="value-chart-wrap"><div class="value-chart-label">Wertverlauf</div><div class="value-chart-canvas-wrap"><canvas id="${chartId}"></canvas></div></div>`:""}
@@ -2152,18 +2254,26 @@ function renderCards() {
       ? `<img src="${item.imgData}" alt="${item.name}">`
       : `<i class="ti ti-playing-card placeholder"></i>`;
     const selected = origIdx === state.selectedIdx;
+    const valNum = parseFloat(item.value) || 0;
+    const needsLookup = valNum === 0;
+    const marketLabel = (item.type === 'Karte Graded') ? 'eBay' : 'Cardmarket';
+    const lookupBtns = needsLookup ? `
+        <div class="lookup-btns" onclick="event.stopPropagation()">
+          <button class="lookup-btn" onclick="copyItemString(${origIdx}, event)" title="Suchstring kopieren"><i class="ti ti-copy"></i> Kopieren</button>
+          <button class="lookup-btn" onclick="openMarketSearch(${origIdx}, event)" title="Auf ${marketLabel} suchen"><i class="ti ti-search"></i> ${marketLabel}</button>
+        </div>` : '';
     return `<div class="card-tile ${selected?'selected':''}" onclick="selectCard(${origIdx})">
       <div class="card-img-box ${boxCls}">${imgHtml}</div>
       <div class="card-tile-body">
         <div class="card-tile-name">${item.name}</div>
         ${item.setName?`<div class="card-tile-sub">${item.setName}</div>`:''}
         ${item.cardNumber?`<div class="card-tile-num">${item.cardNumber}</div>`:''}
-        <div class="card-tile-value">${parseFloat(item.value).toFixed(2)} €</div>
+        <div class="card-tile-value">${valNum.toFixed(2)} €</div>
         <div class="card-tile-tags">
           <span class="ctag ctag-type">${item.type}</span>
           ${item.lang?`<span class="ctag ctag-lang">${item.lang}</span>`:''}
           ${item.condition?`<span class="ctag ctag-cond">${item.condition}</span>`:''}
-        </div>
+        </div>${lookupBtns}
       </div>
     </div>`;
   }).join('');
@@ -2211,6 +2321,14 @@ function showDetailPanel(idx) {
       <div class="detail-value">${parseFloat(item.value).toFixed(2)} €</div>
       ${hasCosts ? `<div class="detail-profit" style="color:${profit>=0?'#4ade80':'#f87171'}">${profit>=0?'▲':'▼'} ${Math.abs(profit).toFixed(2)} € ${profit>=0?'Gewinn':'Verlust'} · Gesamtkosten: ${costs.toFixed(2)} €</div>` : ''}
     </div>
+    ${(parseFloat(item.value)||0) === 0 ? `
+      <div class="lookup-box">
+        <div class="lookup-box-label">Marktwert ermitteln</div>
+        <div class="lookup-btns">
+          <button class="lookup-btn" onclick="copyItemString(${idx}, event)"><i class="ti ti-copy"></i> Suchstring kopieren</button>
+          <button class="lookup-btn" onclick="openMarketSearch(${idx}, event)"><i class="ti ti-external-link"></i> ${item.type === 'Karte Graded' ? 'eBay Last Solds' : 'Cardmarket öffnen'}</button>
+        </div>
+      </div>` : ''}
     <button class="update-value-btn" onclick="promptNewValue(${idx})"><i class="ti ti-trending-up"></i> Aktuellen Wert aktualisieren</button>
     <button class="update-value-btn" onclick="openEditCostsModal(${idx})" style="margin-top:-6px"><i class="ti ti-edit"></i> Kosten bearbeiten</button>
     ${hasHistory?`<div class="value-chart-wrap"><div class="value-chart-label">Wertverlauf</div><div class="value-chart-canvas-wrap"><canvas id="${chartId}"></canvas></div></div>`:""}
