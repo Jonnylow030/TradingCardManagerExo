@@ -1466,7 +1466,7 @@ function onTypeChange() {
   if (type==="Karte RAW") {
     cw.innerHTML = `<select class="form-control" id="f_cond"><option>Mint</option><option>Near Mint</option><option>Excellent</option><option>Good</option><option>Light Played</option><option>Played</option><option>Poor</option></select>`;
   } else if (type==="Karte Graded") {
-    cw.innerHTML = `<div class="graded-row"><select class="form-control" id="f_grading_service"><option>PSA</option><option>BGS</option><option>CGC</option><option>AOG</option><option>Andere</option></select><select class="form-control" id="f_grade"><option>10</option><option>9</option><option>8</option><option>7</option><option>6</option><option>5</option><option>4</option><option>3</option><option>2</option><option>1</option></select></div>`;
+    cw.innerHTML = `<div class="graded-row"><select class="form-control" id="f_grading_service"><option>PSA</option><option>BGS</option><option>CGC</option><option>AOG</option><option>Andere</option></select><select class="form-control" id="f_grade"><option>10</option><option>9.5</option><option>9</option><option>8.5</option><option>8</option><option>7</option><option>6</option><option>5</option><option>4</option><option>3</option><option>2</option><option>1</option></select></div>`;
   } else {
     cw.innerHTML = `<select class="form-control" id="f_cond"><option>Mint</option><option>Leichte Beschädigung</option><option>Beschädigung</option></select>`;
   }
