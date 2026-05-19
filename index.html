@@ -1690,7 +1690,7 @@ function openFormModal() {
   document.getElementById("formModal").style.display = "flex";
 }
 
-// Rarity-Optionen je TCG
+// Rarity-Optionen je TCG (für Karten)
 const RARITY_OPTIONS = {
   pk: [
     "Unlimited","1. Edition","Holo","Reverse Holo","Reverse Holo Stamp",
@@ -1709,13 +1709,31 @@ const RARITY_OPTIONS = {
   ]
 };
 
+// Für sealed Items (Booster Box, Collection, ETB, Blister, UPC etc.): nur zwei Optionen
+const SEALED_RARITY_OPTIONS = ["Unlimited","1. Edition"];
+
 function populateRarityChips(tcg) {
   const grid = document.getElementById('f_rarity_grid');
+  const hintEl = document.querySelector('#rarityGroup .form-hint');
   if (!grid) return;
-  const opts = RARITY_OPTIONS[tcg] || RARITY_OPTIONS.pk;
-  grid.innerHTML = opts.map(opt =>
-    `<label class="rarity-chip"><input type="checkbox" value="${opt}"><span>${opt}</span></label>`
-  ).join('');
+  const type = document.getElementById('f_type')?.value || 'Karte RAW';
+  const isCard = (type === 'Karte RAW' || type === 'Karte Graded');
+  if (isCard) {
+    // Karten: Multi-Select wie gehabt
+    const opts = RARITY_OPTIONS[tcg] || RARITY_OPTIONS.pk;
+    grid.innerHTML = opts.map(opt =>
+      `<label class="rarity-chip"><input type="checkbox" value="${opt}"><span>${opt}</span></label>`
+    ).join('');
+    if (hintEl) hintEl.textContent = '(Mehrfachauswahl möglich)';
+  } else {
+    // Sealed: Single-Select via Radio + "keine Angabe"-Chip
+    grid.innerHTML =
+      `<label class="rarity-chip"><input type="radio" name="f_rarity_radio" value="" checked><span>— keine Angabe —</span></label>` +
+      SEALED_RARITY_OPTIONS.map(opt =>
+        `<label class="rarity-chip"><input type="radio" name="f_rarity_radio" value="${opt}"><span>${opt}</span></label>`
+      ).join('');
+    if (hintEl) hintEl.textContent = '(eine Auswahl)';
+  }
 }
 
 function closeFormModal() { document.getElementById("formModal").style.display = "none"; }
@@ -1728,6 +1746,8 @@ function onTypeChange() {
   // Gradingkosten nur bei Karte Graded
   const gcGroup = document.getElementById("gradingCostGroup");
   if (gcGroup) gcGroup.style.display = (type==="Karte Graded") ? "block" : "none";
+  // Rarity-Chips passend zum Typ neu rendern
+  populateRarityChips(state.activeTcg);
   if (type==="Karte RAW") {
     cw.innerHTML = `<select class="form-control" id="f_cond"><option>Mint</option><option>Near Mint</option><option>Excellent</option><option>Good</option><option>Light Played</option><option>Played</option><option>Poor</option></select>`;
   } else if (type==="Karte Graded") {
@@ -1830,7 +1850,7 @@ async function saveItem(e) {
     type, name,
     cardNumber: document.getElementById("f_cardnumber").value.trim(),
     setName: document.getElementById("f_set_name").value,
-    rarity: Array.from(document.querySelectorAll('#f_rarity_grid input:checked')).map(c => c.value).join(', '),
+    rarity: Array.from(document.querySelectorAll('#f_rarity_grid input:checked')).map(c => c.value).filter(v => v).join(', '),
     condition: getCondition(type),
     lang: document.getElementById("f_lang").value,
     value: currentValue,
@@ -1961,16 +1981,32 @@ function totalCosts(item) {
          (parseFloat(item.gradingCost)||0);
 }
 
-// Such-String für ein Item bauen (Reihenfolge: Name SET Rarität Nummer Sprache Zustand/Grading)
+// Such-String für ein Item bauen
 function buildItemSearchString(item) {
+  const isCard = (item.type === 'Karte RAW' || item.type === 'Karte Graded');
   const parts = [];
-  if (item.name) parts.push(item.name);
-  if (item.setName) parts.push(item.setName);
-  if (item.rarity) parts.push(item.rarity.replace(/,/g, '')); // mehrere Raritäten ohne Komma im Suchstring
-  if (item.cardNumber) parts.push(item.cardNumber);
-  if (item.lang) parts.push(item.lang);
-  // Bei Graded: condition enthält schon "PSA 10" o.ä. – einfach übernehmen
-  if (item.condition) parts.push(item.condition);
+  if (isCard) {
+    // Karten: Name SET Rarität Nummer Sprache Zustand/Grading
+    if (item.name) parts.push(item.name);
+    if (item.setName) parts.push(item.setName);
+    if (item.rarity) parts.push(item.rarity.replace(/,/g, '')); // mehrere Raritäten ohne Komma
+    if (item.cardNumber) parts.push(item.cardNumber);
+    if (item.lang) parts.push(item.lang);
+    if (item.condition) parts.push(item.condition);
+  } else {
+    // Sealed Items: Name – Art (nur wenn nicht im Namen) – Rarität – Sprache
+    if (item.name) parts.push(item.name);
+    if (item.type) {
+      const nameLower = (item.name || '').toLowerCase();
+      const typeLower = item.type.toLowerCase();
+      // Nur anhängen, wenn der Item-Typ nicht schon (zusammenhängend) im Namen vorkommt
+      if (!nameLower.includes(typeLower)) {
+        parts.push(item.type);
+      }
+    }
+    if (item.rarity) parts.push(item.rarity);
+    if (item.lang) parts.push(item.lang);
+  }
   return parts.join(' ');
 }
 
