@@ -85,7 +85,7 @@ body::after {
   position: fixed;
   inset: 0;
   z-index: -1;
-  background: linear-gradient(180deg, rgba(12,14,26,0.82) 0%, rgba(12,14,26,0.92) 100%);
+  background: linear-gradient(180deg, rgba(12,14,26,0.65) 0%, rgba(12,14,26,0.78) 100%);  /* leichter, damit Watermark durchkommt | ALT: rgba(12,14,26,0.82) 0%, rgba(12,14,26,0.92) 100% */
   opacity: 0;
   transition: opacity 0.5s ease;
   pointer-events: none;
@@ -100,7 +100,7 @@ body.app-active.tcg-pk::before,
 body.app-active.tcg-op::before,
 body.app-active.tcg-yg::before {
   background-image: url('valorasymbol.png');
-  opacity: 0.06;
+  opacity: 0.18;
 }
 body.app-active.tcg-pk::after,
 body.app-active.tcg-op::after,
