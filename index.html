@@ -71,7 +71,7 @@ body::before {
   position: fixed;
   inset: 0;
   z-index: -2;
-  background-size: cover;
+  background-size: 60vmin;             /* dezent groß, skaliert mit Viewport | ALT für TCG-BGs: cover */
   background-position: center center;
   background-repeat: no-repeat;
   background-image: none;
@@ -91,10 +91,17 @@ body::after {
   pointer-events: none;
 }
 
-/* Nur sichtbar wenn App aktiv (nicht im Splash) */
-body.app-active.tcg-pk::before { background-image: url('bg-pokemon.jpg'); opacity: 1; }
-body.app-active.tcg-op::before { background-image: url('bg-onepiece.jpg'); opacity: 1; }
-body.app-active.tcg-yg::before { background-image: url('bg-yugioh.jpg'); opacity: 1; }
+/* Einheitliches Valora-Symbol als dezenter Hintergrund für alle TCGs.
+   ALT (vorher pro TCG eigene Bilder):
+   body.app-active.tcg-pk::before { background-image: url('bg-pokemon.jpg'); opacity: 1; }
+   body.app-active.tcg-op::before { background-image: url('bg-onepiece.jpg'); opacity: 1; }
+   body.app-active.tcg-yg::before { background-image: url('bg-yugioh.jpg'); opacity: 1; } */
+body.app-active.tcg-pk::before,
+body.app-active.tcg-op::before,
+body.app-active.tcg-yg::before {
+  background-image: url('valorasymbol.png');
+  opacity: 0.06;
+}
 body.app-active.tcg-pk::after,
 body.app-active.tcg-op::after,
 body.app-active.tcg-yg::after { opacity: 1; }
