@@ -12,10 +12,21 @@
 /* ===== RESET & BASE ===== */
 *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
 :root {
-  --bg: #0c0e1a;
-  --bg-panel: #111422;
-  --bg-card: #161929;
-  --bg-hover: #1c2035;
+  /* ===========================================================
+     VALORA BRANDING (v1) — leicht zurückzudrehen:
+     Wenn dir das Branding nicht gefällt, tausche die Werte in
+     den Variablen --brand-*, --bg* und in TCG_COLORS.pk gegen
+     die "ALT"-Werte in den Kommentaren daneben.
+     =========================================================== */
+  --brand:        #1FB4C9;                  /* Valora-Türkis     | ALT: #f4c800 (Pokémon-Gelb) */
+  --brand-dim:    rgba(31,180,201,0.12);    /*                   | ALT: rgba(244,200,0,0.12)   */
+  --brand-glow:   rgba(31,180,201,0.28);    /*                   | ALT: rgba(244,200,0,0.25)   */
+
+  --bg:        #0a1418;                     /* leicht teal-getönt | ALT: #0c0e1a */
+  --bg-panel:  #0f1a20;                     /*                   | ALT: #111422 */
+  --bg-card:   #14222a;                     /*                   | ALT: #161929 */
+  --bg-hover:  #1a2c36;                     /*                   | ALT: #1c2035 */
+
   --border: rgba(255,255,255,0.07);
   --border-strong: rgba(255,255,255,0.12);
   --text: #e8eaf0;
@@ -25,9 +36,9 @@
   --radius: 12px;
   --radius-lg: 16px;
 
-  --pk: #f4c800;
-  --pk-dim: rgba(244,200,0,0.12);
-  --pk-glow: rgba(244,200,0,0.25);
+  --pk: var(--brand);                       /* Pokémon nutzt jetzt Valora-Türkis | ALT: #f4c800 */
+  --pk-dim: var(--brand-dim);               /*                                    | ALT: rgba(244,200,0,0.12) */
+  --pk-glow: var(--brand-glow);             /*                                    | ALT: rgba(244,200,0,0.25) */
   --op: #e84040;
   --op-dim: rgba(232,64,64,0.12);
   --op-glow: rgba(232,64,64,0.25);
@@ -35,9 +46,9 @@
   --yg-dim: rgba(155,93,229,0.12);
   --yg-glow: rgba(155,93,229,0.25);
 
-  --accent: var(--pk);
-  --accent-dim: var(--pk-dim);
-  --accent-glow: var(--pk-glow);
+  --accent: var(--brand);
+  --accent-dim: var(--brand-dim);
+  --accent-glow: var(--brand-glow);
 }
 body {
   font-family: 'Sora', sans-serif;
@@ -117,7 +128,7 @@ body.app-active.tcg-yg .mobile-header { background: rgba(18,21,38,0.8); backdrop
   transition: opacity 0.6s ease, transform 0.6s ease;
   cursor: pointer;
   overflow: hidden;
-  background: #0c0e1a;
+  background: #E8F7F9;  /* helles Valora-Türkis (Logo-Hintergrund) | ALT: #0c0e1a */
 }
 #splash::before {
   content: '';
@@ -143,11 +154,11 @@ body.app-active.tcg-yg .mobile-header { background: rgba(18,21,38,0.8); backdrop
   font-size: 10px;
   letter-spacing: 4px;
   text-transform: uppercase;
-  color: rgba(150,200,255,0.55);
+  color: rgba(20,60,80,0.6);  /* dunkles Teal für hellen Hintergrund | ALT: rgba(150,200,255,0.55) */
   font-weight: 500;
   z-index: 2;
   animation: splashHintPulse 2.5s 1s ease-in-out infinite;
-  text-shadow: 0 2px 8px rgba(0,0,0,0.6);
+  text-shadow: none;  /* ALT (für dunklen Hintergrund): 0 2px 8px rgba(0,0,0,0.6) */
   pointer-events: none;
 }
 
@@ -161,15 +172,16 @@ body.app-active.tcg-yg .mobile-header { background: rgba(18,21,38,0.8); backdrop
   to { opacity: 1; transform: scale(1); }
 }
 
-/* Splash auf Smartphones: separates Bild, vollflächig ohne Ränder */
+/* Splash auf Smartphones: separates Hochformat-Logo, vollflächig */
 @media (max-width: 768px) {
   #splash {
-    background: #0c1828;
+    background: #E8F7F9;  /* helles Valora-Türkis | ALT: #0c1828 */
   }
   #splash::before {
-    background-image: url('valoralogo.png');
+    background-image: url('valoramobile.png');
     background-size: cover;
     background-position: center center;
+    background-repeat: no-repeat;
   }
 }
 
@@ -1502,7 +1514,9 @@ let imgBase64 = null;
 
 // Dynamic accent colors
 const TCG_COLORS = {
-  pk: { accent: '#f4c800', dim: 'rgba(244,200,0,0.12)', glow: 'rgba(244,200,0,0.25)' },
+  // pk nutzt Valora-Türkis als Branding-Farbe.
+  // ALT (zum Zurücksetzen): { accent: '#f4c800', dim: 'rgba(244,200,0,0.12)', glow: 'rgba(244,200,0,0.25)' }
+  pk: { accent: '#1FB4C9', dim: 'rgba(31,180,201,0.12)', glow: 'rgba(31,180,201,0.28)' },
   op: { accent: '#e84040', dim: 'rgba(232,64,64,0.12)', glow: 'rgba(232,64,64,0.25)' },
   yg: { accent: '#9b5de5', dim: 'rgba(155,93,229,0.12)', glow: 'rgba(155,93,229,0.25)' },
 };
