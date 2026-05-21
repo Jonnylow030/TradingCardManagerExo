@@ -2167,6 +2167,8 @@ function showDetail(idx) {
       ${item.refurbCost?`<div class="detail-field"><div class="detail-field-label">Aufbereitung</div><div class="detail-field-val">${parseFloat(item.refurbCost).toFixed(2)} €</div></div>`:""}
       ${item.gradingCost?`<div class="detail-field"><div class="detail-field-label">Grading</div><div class="detail-field-val">${parseFloat(item.gradingCost).toFixed(2)} €</div></div>`:""}
     </div>
+    ${state.activeSection === 'collection' ? `<button class="update-value-btn" onclick="moveItem(${idx}, 'forsale')" style="margin-top:-6px;background:rgba(96,165,250,0.1);border-color:rgba(96,165,250,0.3);color:#60a5fa"><i class="ti ti-tag"></i> Zum Verkauf verschieben</button>` : ''}
+    ${state.activeSection === 'forsale' ? `<button class="update-value-btn" onclick="moveItem(${idx}, 'collection')" style="margin-top:-6px;background:rgba(96,165,250,0.1);border-color:rgba(96,165,250,0.3);color:#60a5fa"><i class="ti ti-album"></i> In Sammlung verschieben</button>` : ''}
     <button class="update-value-btn" onclick="duplicateItem(${idx})" style="margin-top:-6px;background:rgba(74,222,128,0.1);border-color:rgba(74,222,128,0.3);color:#4ade80"><i class="ti ti-copy"></i> Item duplizieren</button>
     <button class="delete-btn" onclick="deleteItem(${idx})"><i class="ti ti-trash" aria-hidden="true"></i> Item löschen</button>`;
   document.getElementById("detailModal").style.display = "flex";
@@ -2522,6 +2524,8 @@ function showDetailPanel(idx) {
         ${item.condition ? `<span class="dtag cond">${item.condition}</span>` : ''}
       </div>
     </div>
+    ${state.activeSection === 'collection' ? `<button class="update-value-btn" onclick="moveItem(${idx}, 'forsale')" style="background:rgba(96,165,250,0.1);border-color:rgba(96,165,250,0.3);color:#60a5fa"><i class="ti ti-tag"></i> Zum Verkauf verschieben</button>` : ''}
+    ${state.activeSection === 'forsale' ? `<button class="update-value-btn" onclick="moveItem(${idx}, 'collection')" style="background:rgba(96,165,250,0.1);border-color:rgba(96,165,250,0.3);color:#60a5fa"><i class="ti ti-album"></i> In Sammlung verschieben</button>` : ''}
   `;
   document.getElementById('detailActions').innerHTML = `
     <button class="daction-btn" onclick="closeDetail()">Schließen</button>
@@ -2600,6 +2604,26 @@ async function duplicateItem(idx, evt) {
   showSaveStatus('Dupliziere…');
   const ok = await saveOneItem(copy, state.activeTcg, state.activeSection);
   showSaveStatus(ok ? 'Dupliziert ✓' : 'Fehler beim Duplizieren!', !ok);
+}
+
+// Item in eine andere Sektion verschieben (z.B. Sammlung <-> Verkauf)
+async function moveItem(idx, targetSection) {
+  const fromSection = state.activeSection;
+  const items = getItems(state.activeTcg, fromSection);
+  const item = items[idx];
+  if (!item) return;
+  // Aus aktueller Sektion entfernen
+  items.splice(idx, 1);
+  // In Zielsektion einfügen
+  getItems(state.activeTcg, targetSection).push(item);
+  state.selectedIdx = null;
+  closeDetail();
+  renderAll(); updateTotalValue();
+  const secLabel = SECTIONS.find(s => s.id === targetSection)?.label || targetSection;
+  showSaveStatus(`Verschiebe nach „${secLabel}"…`);
+  // In DB die section-Spalte aktualisieren (saveOneItem schreibt section mit)
+  const ok = await saveOneItem(item, state.activeTcg, targetSection);
+  showSaveStatus(ok ? `Verschoben → ${secLabel} ✓` : 'Fehler beim Verschieben!', !ok);
 }
 
 async function init() {
