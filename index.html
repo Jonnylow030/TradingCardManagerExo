@@ -2622,10 +2622,12 @@ async function buildSalesCard(item) {
 
   const price = (parseFloat(item.value) || 0);
   const priceStr = price.toLocaleString('de-DE', { minimumFractionDigits: 2, maximumFractionDigits: 2 }) + ' €';
+  const priceBaselineY = ty + 30;
   ctx.fillStyle = '#4ade80';
   ctx.font = '800 96px Sora, sans-serif';
   ctx.textAlign = 'right';
-  ctx.fillText(priceStr, W - 40, ty + 30);
+  const pw = ctx.measureText(priceStr).width;
+  ctx.fillText(priceStr, W - 40, priceBaselineY);
 
   // "Preis"-Label links neben dem Preis
   ctx.fillStyle = 'rgba(255,255,255,0.4)';
@@ -2633,25 +2635,27 @@ async function buildSalesCard(item) {
   ctx.textAlign = 'left';
   ctx.fillText('PREIS', 40, ty + 10);
 
-  // Großes, transparentes Watermark ganz unten über (fast) die ganze Breite
+  // Watermark zwischen "PREIS"-Label (links) und Preisbetrag (rechts) platzieren
   const wm = await loadImg('valorawatermark.png');
   if (wm) {
-    const maxWmW = W - 80;                 // fast volle Breite
-    const maxWmH = 170;                    // kompakter, damit Preis frei bleibt
     const ratio = wm.width / wm.height;
-    let wmW = maxWmW;
-    let wmH = wmW / ratio;
-    if (wmH > maxWmH) { wmH = maxWmH; wmW = wmH * ratio; }
-    const wmX = (W - wmW) / 2;             // zentriert
-    const wmY = H - wmH - 24;
-    ctx.globalAlpha = 0.6;
-    ctx.drawImage(wm, wmX, wmY, wmW, wmH);
+    // Höhe an der Preiszeile ausrichten
+    const wmH = 130;
+    const wmW = wmH * ratio;
+    // Verfügbarer Bereich: rechts von "PREIS" (~ x=180) bis links vom Preis
+    const priceLeftEdge = W - 40 - pw;     // pw = Breite des Preistexts (siehe unten)
+    const zoneLeft = 200;
+    const zoneRight = priceLeftEdge - 30;
+    const zoneCenter = (zoneLeft + zoneRight) / 2;
+    let drawW = wmW, drawH = wmH;
+    // Falls zu breit für die Zone, runterskalieren
+    const zoneW = zoneRight - zoneLeft;
+    if (drawW > zoneW) { drawW = zoneW; drawH = drawW / ratio; }
+    const wmX = zoneCenter - drawW / 2;
+    const wmY = priceBaselineY - drawH / 2 - 20;  // vertikal an Preiszeile zentriert
+    ctx.globalAlpha = 0.9;                 // gut sichtbar
+    ctx.drawImage(wm, wmX, wmY, drawW, drawH);
     ctx.globalAlpha = 1;
-  } else {
-    ctx.fillStyle = 'rgba(255,255,255,0.3)';
-    ctx.font = '600 30px Sora, sans-serif';
-    ctx.textAlign = 'left';
-    ctx.fillText('Valora', 40, H - 50);
   }
 
   return new Promise(resolve => canvas.toBlob(resolve, 'image/jpeg', 0.9));
