@@ -1717,7 +1717,8 @@ async function loadData() {
         legoNumMinifigs: row.lego_num_minifigs,
         legoTheme:    row.lego_theme,
         legoYear:     row.lego_year,
-        legoStatus:   row.lego_status
+        legoStatus:   row.lego_status,
+        legoImgUrl:   row.lego_img_url
       });
     });
   } catch(e) {
@@ -1772,7 +1773,8 @@ function itemToRow(item, tcg, section) {
     lego_num_minifigs: item.legoNumMinifigs != null && item.legoNumMinifigs !== '' ? parseInt(item.legoNumMinifigs) : null,
     lego_theme:        item.legoTheme || null,
     lego_year:         item.legoYear != null && item.legoYear !== '' ? parseInt(item.legoYear) : null,
-    lego_status:       item.legoStatus || null
+    lego_status:       item.legoStatus || null,
+    lego_img_url:      item.legoImgUrl || null
   };
 }
 
@@ -1860,6 +1862,7 @@ function imgRatio(type) { return type==="Karte RAW"?"2/3":type==="Karte Graded"?
 function openFormModal() {
   imgBase64 = null;
   imgBase64Back = null;
+  legoImgUrlPending = null;
   document.getElementById("itemForm").reset();
   document.getElementById("f_set_search").value = "";
   document.getElementById("f_set_name").value = "";
@@ -2124,7 +2127,8 @@ async function saveItem(e) {
     legoNumParts:    isLego ? document.getElementById("f_lego_parts").value : null,
     legoNumMinifigs: isLego ? document.getElementById("f_lego_minifigs").value : null,
     legoYear:        isLego ? document.getElementById("f_lego_year").value : null,
-    legoStatus:      isLego ? document.getElementById("f_lego_status").value : null
+    legoStatus:      isLego ? document.getElementById("f_lego_status").value : null,
+    legoImgUrl:      isLego ? legoImgUrlPending : null
   };
   const tcg = state.activeTcg, section = state.activeSection;
   getItems(tcg, section).push(item);
@@ -2496,6 +2500,7 @@ async function loadAndSetLookupImage(url) {
 // ===== LEGO SET-LOOKUP (über Supabase Edge Function -> Rebrickable) =====
 const REBRICKABLE_FN_URL = SUPABASE_URL + '/functions/v1/rebrickable-lookup';
 let _legoLookupResults = [];
+let legoImgUrlPending = null;  // Bild-URL aus dem letzten Lookup (wird beim Speichern übernommen)
 
 // Ruft die Edge Function auf. action: 'set' (Direktlookup) oder 'search' (Namenssuche)
 async function callRebrickable(payload) {
@@ -2601,8 +2606,26 @@ function applyLegoResult(s) {
   setVal('f_lego_year', s.year || '');
   // Themenwelt vom Server (theme_name) übernehmen, falls vorhanden
   if (s.theme_name) setVal('f_lego_theme', s.theme_name);
-  if (s.img_url) loadAndSetLookupImage(s.img_url);
+  // Bild: NICHT per fetch laden (CORS), sondern URL merken und direkt als Vorschau anzeigen
+  if (s.img_url) {
+    legoImgUrlPending = s.img_url;
+    showUploadPreviewUrl(s.img_url, 'uploadArea');
+  }
   showSaveStatus('Set-Daten übernommen ✓');
+}
+
+// Zeigt eine externe Bild-URL als Vorschau in der Upload-Box (ohne fetch/Base64)
+function showUploadPreviewUrl(url, areaId = 'uploadArea') {
+  const ua = document.getElementById(areaId);
+  if (!ua) return;
+  const ex = ua.querySelector('img'); if (ex) ex.remove();
+  const icon = ua.querySelector('.up-icon'), p = ua.querySelector('p');
+  const img = document.createElement('img');
+  img.src = url;
+  img.referrerPolicy = 'no-referrer';
+  ua.appendChild(img);
+  if (icon) icon.style.display = 'none';
+  if (p) p.style.display = 'none';
 }
 
 function showDetail(idx) {
@@ -3160,8 +3183,9 @@ function renderCards() {
     const needsLookup = valNum === 0;
 
     if (isLego) {
-      const imgHtmlL = item.imgData
-        ? `<img src="${item.imgData}" alt="${item.name}">`
+      const legoImg = item.imgData || item.legoImgUrl;
+      const imgHtmlL = legoImg
+        ? `<img src="${legoImg}" alt="${item.name}" referrerpolicy="no-referrer">`
         : `<i class="ti ti-building-bridge-2 placeholder"></i>`;
       const legoTags = [];
       if (item.legoNumParts) legoTags.push(`<span class="ctag ctag-parts">${item.legoNumParts} Teile</span>`);
@@ -3303,7 +3327,7 @@ function showDetailPanel(idx) {
   document.getElementById('detailScroll').innerHTML = `
     <div class="detail-title">${item.name}</div>
     <div class="detail-type-row">${typeRow}</div>
-    ${item.imgData ? `<div class="detail-img-wrap"><img class="detail-img" src="${item.imgData}" alt="${item.name}"></div>` : ''}
+    ${(item.imgData || (isLego && item.legoImgUrl)) ? `<div class="detail-img-wrap"><img class="detail-img" src="${item.imgData || item.legoImgUrl}" alt="${item.name}" referrerpolicy="no-referrer"></div>` : ''}
     ${item.imgDataBack ? `<div class="detail-img-wrap"><img class="detail-img" src="${item.imgDataBack}" alt="${item.name} Rückseite"></div>` : ''}
     <div class="detail-value-row">
       <div class="detail-value">${parseFloat(item.value).toFixed(2)} €</div>
