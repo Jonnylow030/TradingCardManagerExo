@@ -45,6 +45,9 @@
   --yg: #9b5de5;
   --yg-dim: rgba(155,93,229,0.12);
   --yg-glow: rgba(155,93,229,0.25);
+  --lg: #e3000b;
+  --lg-dim: rgba(227,0,11,0.12);
+  --lg-glow: rgba(227,0,11,0.28);
 
   --accent: var(--brand);
   --accent-dim: var(--brand-dim);
@@ -98,35 +101,43 @@ body::after {
    body.app-active.tcg-yg::before { background-image: url('bg-yugioh.jpg'); opacity: 1; } */
 body.app-active.tcg-pk::before,
 body.app-active.tcg-op::before,
-body.app-active.tcg-yg::before {
+body.app-active.tcg-yg::before,
+body.app-active.tcg-lg::before {
   background-image: url('valorasymbol.png');
   opacity: 0.18;
 }
 body.app-active.tcg-pk::after,
 body.app-active.tcg-op::after,
-body.app-active.tcg-yg::after { opacity: 1; }
+body.app-active.tcg-yg::after,
+body.app-active.tcg-lg::after { opacity: 1; }
 
 /* Panels leicht transparent, damit Hintergrund durchschimmert */
 body.app-active.tcg-pk,
 body.app-active.tcg-op,
-body.app-active.tcg-yg {
+body.app-active.tcg-yg,
+body.app-active.tcg-lg {
   background: transparent;
 }
 body.app-active.tcg-pk .main-content,
 body.app-active.tcg-op .main-content,
-body.app-active.tcg-yg .main-content { background: transparent; }
+body.app-active.tcg-yg .main-content,
+body.app-active.tcg-lg .main-content { background: transparent; }
 body.app-active.tcg-pk .sidebar,
 body.app-active.tcg-op .sidebar,
-body.app-active.tcg-yg .sidebar { background: rgba(18,21,38,0.75); backdrop-filter: blur(8px); -webkit-backdrop-filter: blur(8px); }
+body.app-active.tcg-yg .sidebar,
+body.app-active.tcg-lg .sidebar { background: rgba(18,21,38,0.75); backdrop-filter: blur(8px); -webkit-backdrop-filter: blur(8px); }
 body.app-active.tcg-pk .main-topbar,
 body.app-active.tcg-op .main-topbar,
-body.app-active.tcg-yg .main-topbar { background: rgba(18,21,38,0.75); backdrop-filter: blur(8px); -webkit-backdrop-filter: blur(8px); }
+body.app-active.tcg-yg .main-topbar,
+body.app-active.tcg-lg .main-topbar { background: rgba(18,21,38,0.75); backdrop-filter: blur(8px); -webkit-backdrop-filter: blur(8px); }
 body.app-active.tcg-pk .stats-bar,
 body.app-active.tcg-op .stats-bar,
-body.app-active.tcg-yg .stats-bar { background: rgba(18,21,38,0.7); backdrop-filter: blur(8px); -webkit-backdrop-filter: blur(8px); }
+body.app-active.tcg-yg .stats-bar,
+body.app-active.tcg-lg .stats-bar { background: rgba(18,21,38,0.7); backdrop-filter: blur(8px); -webkit-backdrop-filter: blur(8px); }
 body.app-active.tcg-pk .mobile-header,
 body.app-active.tcg-op .mobile-header,
-body.app-active.tcg-yg .mobile-header { background: rgba(18,21,38,0.8); backdrop-filter: blur(8px); -webkit-backdrop-filter: blur(8px); }
+body.app-active.tcg-yg .mobile-header,
+body.app-active.tcg-lg .mobile-header { background: rgba(18,21,38,0.8); backdrop-filter: blur(8px); -webkit-backdrop-filter: blur(8px); }
 
 /* ===== SPLASH ===== */
 #splash {
@@ -325,6 +336,12 @@ body.app-active.tcg-yg .mobile-header { background: rgba(18,21,38,0.8); backdrop
 .tcg-nav-item.pk { --item-bg: rgba(244,200,0,0.06); --item-border: rgba(244,200,0,0.2); --item-glow: radial-gradient(ellipse at 0% 50%, rgba(244,200,0,0.07) 0%, transparent 70%); }
 .tcg-nav-item.op { --item-bg: rgba(232,64,64,0.06); --item-border: rgba(232,64,64,0.2); --item-glow: radial-gradient(ellipse at 0% 50%, rgba(232,64,64,0.07) 0%, transparent 70%); }
 .tcg-nav-item.yg { --item-bg: rgba(155,93,229,0.06); --item-border: rgba(155,93,229,0.2); --item-glow: radial-gradient(ellipse at 0% 50%, rgba(155,93,229,0.07) 0%, transparent 70%); }
+.tcg-nav-item.lg { --item-bg: rgba(227,0,11,0.07); --item-border: rgba(227,0,11,0.22); --item-glow: radial-gradient(ellipse at 0% 50%, rgba(227,0,11,0.08) 0%, transparent 70%); }
+.tcg-nav-icon-wrap {
+  width: 42px; height: 42px; flex-shrink: 0;
+  display: flex; align-items: center; justify-content: center;
+  font-size: 24px; color: var(--lg, #e3000b);
+}
 
 .tcg-nav-logo {
   width: 88px; height: 42px; object-fit: contain; flex-shrink: 0;
@@ -341,6 +358,7 @@ body.app-active.tcg-yg .mobile-header { background: rgba(18,21,38,0.8); backdrop
 .tcg-nav-item.active.pk .tcg-nav-arrow { color: var(--pk); }
 .tcg-nav-item.active.op .tcg-nav-arrow { color: var(--op); }
 .tcg-nav-item.active.yg .tcg-nav-arrow { color: var(--yg); }
+.tcg-nav-item.active.lg .tcg-nav-arrow { color: var(--lg); }
 
 .sidebar-footer {
   margin-top: auto; padding: 12px 16px;
@@ -510,6 +528,9 @@ body.app-active.tcg-yg .mobile-header { background: rgba(18,21,38,0.8); backdrop
 .ctag-type { background: rgba(59,130,246,0.15); color: #93c5fd; }
 .ctag-lang { background: rgba(244,200,0,0.1); color: #fbbf24; }
 .ctag-cond { background: rgba(74,222,128,0.1); color: #4ade80; }
+.ctag-parts { background: rgba(227,0,11,0.12); color: #ff6b6b; }
+.ctag-minifig { background: rgba(255,200,80,0.12); color: #fbbf24; }
+.ctag-status { background: rgba(96,165,250,0.12); color: #93c5fd; }
 
 .empty-state {
   display: flex; flex-direction: column; align-items: center; justify-content: center;
@@ -870,6 +891,7 @@ body:has(#app.show) .mobile-header { /* placeholder; eigentliche Regel in @media
   .mobile-tcg-tab.pk.active { background: rgba(244,200,0,0.12); border-color: rgba(244,200,0,0.35); color: var(--pk); }
   .mobile-tcg-tab.op.active { background: rgba(232,64,64,0.12); border-color: rgba(232,64,64,0.35); color: var(--op); }
   .mobile-tcg-tab.yg.active { background: rgba(155,93,229,0.12); border-color: rgba(155,93,229,0.35); color: var(--yg); }
+  .mobile-tcg-tab.lg.active { background: rgba(227,0,11,0.12); border-color: rgba(227,0,11,0.4); color: var(--lg); }
 
   /* Main content darf scrollen */
   .main-content { overflow: visible; }
@@ -1036,6 +1058,7 @@ body:has(#app.show) .mobile-header { /* placeholder; eigentliche Regel in @media
 .tcg-nav-item.active.pk .tcg-nav-label { color: var(--pk); }
 .tcg-nav-item.active.op .tcg-nav-label { color: var(--op); }
 .tcg-nav-item.active.yg .tcg-nav-label { color: var(--yg); }
+.tcg-nav-item.active.lg .tcg-nav-label { color: var(--lg); }
 
 .splash-tcg-icon { font-size: 28px; margin-bottom: 4px; }
 .splash-tcg-title { font-size: 16px; font-weight: 800; color: var(--text); font-family: 'Sora', sans-serif; line-height: 1.1; }
@@ -1069,6 +1092,7 @@ body:has(#app.show) .mobile-header { /* placeholder; eigentliche Regel in @media
     <button class="mobile-tcg-tab pk active" data-tcg="pk" onclick="switchTcg('pk')">Pokémon</button>
     <button class="mobile-tcg-tab op" data-tcg="op" onclick="switchTcg('op')">One Piece</button>
     <button class="mobile-tcg-tab yg" data-tcg="yg" onclick="switchTcg('yg')">Yu-Gi-Oh!</button>
+    <button class="mobile-tcg-tab lg" data-tcg="lg" onclick="switchTcg('lg')">Lego</button>
   </div>
 </div>
 
@@ -1086,6 +1110,7 @@ body:has(#app.show) .mobile-header { /* placeholder; eigentliche Regel in @media
         <div class="profit-row"><span class="profit-row-name">Pokémon</span><span class="profit-row-val" id="profitPk">—</span></div>
         <div class="profit-row"><span class="profit-row-name">One Piece</span><span class="profit-row-val" id="profitOp">—</span></div>
         <div class="profit-row"><span class="profit-row-name">Yu-Gi-Oh!</span><span class="profit-row-val" id="profitYg">—</span></div>
+        <div class="profit-row"><span class="profit-row-name">Lego</span><span class="profit-row-val" id="profitLg">—</span></div>
         <div class="profit-row total"><span class="profit-row-name">Gesamt</span><span class="profit-row-val" id="profitTotal">—</span></div>
       </div>
     </div>
@@ -1109,6 +1134,17 @@ body:has(#app.show) .mobile-header { /* placeholder; eigentliche Regel in @media
         <div class="tcg-nav-text-wrap">
           <div class="tcg-nav-label">Yu-Gi-Oh!</div>
           <div class="tcg-nav-sublabel">Trading Card Game</div>
+        </div>
+        <i class="ti ti-chevron-right tcg-nav-arrow"></i>
+      </div>
+    </nav>
+    <div class="sidebar-section-label" style="margin-top:4px">Bausteine</div>
+    <nav class="tcg-nav">
+      <div class="tcg-nav-item lg" data-tcg="lg" onclick="switchTcg('lg')">
+        <div class="tcg-nav-icon-wrap"><i class="ti ti-building-bridge-2"></i></div>
+        <div class="tcg-nav-text-wrap">
+          <div class="tcg-nav-label">Lego</div>
+          <div class="tcg-nav-sublabel">Sets &amp; Sammlung</div>
         </div>
         <i class="ti ti-chevron-right tcg-nav-arrow"></i>
       </div>
@@ -1191,6 +1227,47 @@ body:has(#app.show) .mobile-header { /* placeholder; eigentliche Regel in @media
         </div>
         <div class="card-lookup-results" id="cardLookupResults"></div>
       </div>
+      <!-- LEGO-SPEZIFISCHE FELDER (nur sichtbar wenn activeTcg === 'lg') -->
+      <div id="legoFields" style="display:none">
+        <div class="form-group">
+          <label class="form-label">Lego Set-Nummer</label>
+          <div class="name-search-wrap">
+            <input type="text" class="form-control mono" id="f_lego_setnum" placeholder="z.B. 75192" inputmode="numeric">
+            <button type="button" class="name-search-btn" id="legoLookupBtn" onclick="lookupLegoSet()" title="Set bei Rebrickable suchen"><i class="ti ti-search"></i></button>
+          </div>
+          <div class="form-hint">Set-Nummer eingeben und auf die Lupe tippen, um Daten automatisch zu laden</div>
+          <div class="card-lookup-results" id="legoLookupResults"></div>
+        </div>
+        <div class="form-group">
+          <label class="form-label">Themenwelt</label>
+          <input type="text" class="form-control" id="f_lego_theme" placeholder="z.B. Star Wars">
+        </div>
+        <div class="row2">
+          <div class="form-group">
+            <label class="form-label">Teile</label>
+            <input type="number" class="form-control" id="f_lego_parts" placeholder="z.B. 7541" min="0" step="1">
+          </div>
+          <div class="form-group">
+            <label class="form-label">Minifiguren</label>
+            <input type="number" class="form-control" id="f_lego_minifigs" placeholder="z.B. 4" min="0" step="1">
+          </div>
+        </div>
+        <div class="row2">
+          <div class="form-group">
+            <label class="form-label">Erscheinungsjahr</label>
+            <input type="number" class="form-control" id="f_lego_year" placeholder="z.B. 2017" min="1949" max="2099" step="1">
+          </div>
+          <div class="form-group">
+            <label class="form-label">Status</label>
+            <select class="form-control" id="f_lego_status">
+              <option value="Versiegelt">Versiegelt (NISB)</option>
+              <option value="Geöffnet">Geöffnet / komplett</option>
+              <option value="Gebaut">Gebaut</option>
+              <option value="Teilmenge">Teilmenge / unvollständig</option>
+            </select>
+          </div>
+        </div>
+      </div>
       <div class="form-group" id="rarityGroup">
         <label class="form-label">Rarität <span class="form-hint" style="display:inline">(Mehrfachauswahl möglich)</span></label>
         <div class="rarity-grid" id="f_rarity_grid"></div>
@@ -1200,7 +1277,7 @@ body:has(#app.show) .mobile-header { /* placeholder; eigentliche Regel in @media
         <input type="text" class="form-control mono" id="f_cardnumber" placeholder="z.B. 199/165">
         <div class="form-hint">Set-Kürzel, Nummer oder beides</div>
       </div>
-      <div class="form-group">
+      <div class="form-group" id="setGroup">
         <label class="form-label">Set</label>
         <div class="set-search-wrap">
           <input type="text" class="form-control" id="f_set_search" placeholder="Set suchen..." autocomplete="off" oninput="filterSets()" onfocus="showSetDropdown()" onblur="hideSetDropdown()">
@@ -1208,11 +1285,11 @@ body:has(#app.show) .mobile-header { /* placeholder; eigentliche Regel in @media
           <div class="set-dropdown" id="setDropdown"></div>
         </div>
       </div>
-      <div class="form-group">
+      <div class="form-group" id="condGroup">
         <label class="form-label">Zustand</label>
         <div id="condWrapper"></div>
       </div>
-      <div class="form-group">
+      <div class="form-group" id="langGroup">
         <label class="form-label">Sprache</label>
         <select class="form-control" id="f_lang">
           <option>Deutsch</option><option>Englisch</option><option>Japanisch</option>
@@ -1264,7 +1341,7 @@ body:has(#app.show) .mobile-header { /* placeholder; eigentliche Regel in @media
           <input type="file" id="f_img_camera" accept="image/*" capture="environment" onchange="previewImg(event)" style="display:none">
         </div>
       </div>
-      <div class="form-group">
+      <div class="form-group" id="backImgGroup">
         <label class="form-label">Bild Rückseite <span class="form-hint" style="display:inline">(optional, für Verkauf)</span></label>
         <div class="img-upload-area card-raw" id="uploadAreaBack" onclick="document.getElementById('f_img_back').click()">
           <div class="up-icon"><i class="ti ti-photo"></i></div>
@@ -1570,6 +1647,7 @@ const TCG_CONFIG = {
   pk: { label: "Pokémon", color: "#FFD700", sets: POKEMON_SETS, tabClass: "tcg-tab-pk", secClass: "pk-sec", addCls: "add-btn-pk", submitCls: "submit-btn-pk" },
   op: { label: "One Piece", color: "#ff6b7a", sets: ONE_PIECE_SETS, tabClass: "tcg-tab-op", secClass: "op-sec", addCls: "add-btn-op", submitCls: "submit-btn-op" },
   yg: { label: "Yu-Gi-Oh", color: "#c084fc", sets: YUGIOH_SETS, tabClass: "tcg-tab-yg", secClass: "yg-sec", addCls: "add-btn-yg", submitCls: "submit-btn-yg" },
+  lg: { label: "Lego", color: "#e3000b", sets: [], tabClass: "tcg-tab-lg", secClass: "lg-sec", addCls: "add-btn-lg", submitCls: "submit-btn-lg", isLego: true },
 };
 
 const SECTIONS = [
@@ -1591,6 +1669,7 @@ const TCG_COLORS = {
   pk: { accent: '#1FB4C9', dim: 'rgba(31,180,201,0.12)', glow: 'rgba(31,180,201,0.28)' },
   op: { accent: '#e84040', dim: 'rgba(232,64,64,0.12)', glow: 'rgba(232,64,64,0.25)' },
   yg: { accent: '#9b5de5', dim: 'rgba(155,93,229,0.12)', glow: 'rgba(155,93,229,0.25)' },
+  lg: { accent: '#e3000b', dim: 'rgba(227,0,11,0.12)', glow: 'rgba(227,0,11,0.28)' },
 };
 
 function setAccent(tcg) {
@@ -1632,7 +1711,13 @@ async function loadData() {
         gradingCost:  row.grading_cost,
         valueHistory: row.value_history,
         imgData:      row.img_data,
-        imgDataBack:  row.img_data_back
+        imgDataBack:  row.img_data_back,
+        legoSetNum:   row.lego_set_num,
+        legoNumParts: row.lego_num_parts,
+        legoNumMinifigs: row.lego_num_minifigs,
+        legoTheme:    row.lego_theme,
+        legoYear:     row.lego_year,
+        legoStatus:   row.lego_status
       });
     });
   } catch(e) {
@@ -1681,7 +1766,13 @@ function itemToRow(item, tcg, section) {
     grading_cost:  item.gradingCost ? parseFloat(item.gradingCost) : null,
     value_history: item.valueHistory || null,
     img_data:      item.imgData || null,
-    img_data_back: item.imgDataBack || null
+    img_data_back: item.imgDataBack || null,
+    lego_set_num:      item.legoSetNum || null,
+    lego_num_parts:    item.legoNumParts != null && item.legoNumParts !== '' ? parseInt(item.legoNumParts) : null,
+    lego_num_minifigs: item.legoNumMinifigs != null && item.legoNumMinifigs !== '' ? parseInt(item.legoNumMinifigs) : null,
+    lego_theme:        item.legoTheme || null,
+    lego_year:         item.legoYear != null && item.legoYear !== '' ? parseInt(item.legoYear) : null,
+    lego_status:       item.legoStatus || null
   };
 }
 
@@ -1716,7 +1807,7 @@ function showSaveStatus(msg, isError = false) {
 // Gesamtwert aller TCGs berechnen und Anzeigen aktualisieren
 function updateTotalValue() {
   let total = 0;
-  const profits = { pk: 0, op: 0, yg: 0 };
+  const profits = { pk: 0, op: 0, yg: 0, lg: 0 };
   for (const tcg of Object.keys(data)) {
     for (const section of Object.keys(data[tcg])) {
       for (const item of data[tcg][section]) {
@@ -1736,7 +1827,7 @@ function updateTotalValue() {
   if (el1) el1.textContent = fmt(total);
   if (el2) el2.textContent = fmt(total);
   // Profit pro TCG + Gesamt
-  const totalProfit = profits.pk + profits.op + profits.yg;
+  const totalProfit = profits.pk + profits.op + profits.yg + profits.lg;
   const setProfit = (id, val) => {
     const el = document.getElementById(id);
     if (!el) return;
@@ -1752,6 +1843,7 @@ function updateTotalValue() {
   setProfit('profitPk', profits.pk);
   setProfit('profitOp', profits.op);
   setProfit('profitYg', profits.yg);
+  setProfit('profitLg', profits.lg);
   setProfit('profitTotal', totalProfit);
   setProfit('profitTotalMobile', totalProfit);
 }
@@ -1774,10 +1866,34 @@ function openFormModal() {
   document.getElementById("f_cardnumber").value = "";
   const cfg = TCG_CONFIG[state.activeTcg];
   const secCfg = SECTIONS.find(s=>s.id===state.activeSection);
+  const isLego = state.activeTcg === 'lg';
   document.getElementById("formModalTitle").textContent = `Neues Item – ${cfg.label}`;
   document.getElementById("formSubmitBtn").className = `submit-btn ${cfg.submitCls}`;
   document.getElementById("purchaseGroup").style.display = secCfg.showPurchase ? "block" : "none";
-  populateRarityChips(state.activeTcg);
+  // Typ-Auswahl passend zum Bereich befüllen
+  populateTypeOptions(state.activeTcg);
+  // Lego-Felder ein/aus, TCG-Felder gegengleich
+  const legoFields = document.getElementById('legoFields');
+  if (legoFields) legoFields.style.display = isLego ? 'block' : 'none';
+  ['rarityGroup','cardNumberGroup','setGroup','condGroup','langGroup','backImgGroup'].forEach(id => {
+    const el = document.getElementById(id);
+    if (el) el.style.display = isLego ? 'none' : '';
+  });
+  // Lego-Lookup-Ergebnisse zurücksetzen + Felder leeren
+  if (isLego) {
+    ['f_lego_setnum','f_lego_theme','f_lego_parts','f_lego_minifigs','f_lego_year'].forEach(id => {
+      const el = document.getElementById(id); if (el) el.value = '';
+    });
+    const lr = document.getElementById('legoLookupResults');
+    if (lr) { lr.className = 'card-lookup-results'; lr.innerHTML = ''; }
+    // Vorderseiten-Bild-Label auf "Set-Bild" umstellen
+    const frontP = document.querySelector('#uploadArea p');
+    if (frontP) frontP.textContent = 'Set-Bild · JPG / PNG / WebP';
+  } else {
+    const frontP = document.querySelector('#uploadArea p');
+    if (frontP) frontP.textContent = 'Vorderseite · JPG / PNG / WebP';
+    populateRarityChips(state.activeTcg);
+  }
   onTypeChange();
   updateUploadPreview(null);
   updateUploadPreview(null, "uploadAreaBack");
@@ -1788,6 +1904,19 @@ function openFormModal() {
   const lookupRes = document.getElementById('cardLookupResults');
   if (lookupRes) { lookupRes.className = 'card-lookup-results'; lookupRes.innerHTML = ''; }
   document.getElementById("formModal").style.display = "flex";
+}
+
+// Füllt die "Art des Items"-Auswahl je nach Bereich
+const TYPE_OPTIONS = {
+  tcg: ["Karte RAW","Karte Graded","Booster Box","ETB","Kollektion","Blister","UPC"],
+  lg:  ["Set","Minifigur","Polybag","Einzelteile","Sonstiges"]
+};
+function populateTypeOptions(tcg) {
+  const sel = document.getElementById('f_type');
+  if (!sel) return;
+  const opts = (tcg === 'lg') ? TYPE_OPTIONS.lg : TYPE_OPTIONS.tcg;
+  const labelMap = { "ETB": "ETB (Elite Trainer Box)" };
+  sel.innerHTML = opts.map(o => `<option value="${o}">${labelMap[o] || o}</option>`).join('');
 }
 
 // Rarity-Optionen je TCG (für Karten)
@@ -1839,6 +1968,12 @@ function populateRarityChips(tcg) {
 function closeFormModal() { document.getElementById("formModal").style.display = "none"; }
 
 function onTypeChange() {
+  if (state.activeTcg === 'lg') {
+    // Lego: keine TCG-Zustands-/Karten-Logik. Bild-Box im Set-Format (4/3 quer passt gut für Sets).
+    const ua = document.getElementById("uploadArea");
+    if (ua) ua.className = "img-upload-area sealed";
+    return;
+  }
   const type = document.getElementById("f_type").value;
   const cw = document.getElementById("condWrapper");
   const isCard = type==="Karte RAW"||type==="Karte Graded";
@@ -1967,21 +2102,29 @@ async function saveItem(e) {
       }
     }
   }
+  const isLego = state.activeTcg === 'lg';
   const item = {
     type, name,
-    cardNumber: document.getElementById("f_cardnumber").value.trim(),
-    setName: document.getElementById("f_set_name").value,
-    rarity: Array.from(document.querySelectorAll('#f_rarity_grid input:checked')).map(c => c.value).filter(v => v).join(', '),
-    condition: getCondition(type),
-    lang: document.getElementById("f_lang").value,
+    cardNumber: isLego ? "" : document.getElementById("f_cardnumber").value.trim(),
+    setName: isLego ? "" : document.getElementById("f_set_name").value,
+    rarity: isLego ? "" : Array.from(document.querySelectorAll('#f_rarity_grid input:checked')).map(c => c.value).filter(v => v).join(', '),
+    condition: isLego ? "" : getCondition(type),
+    lang: isLego ? "" : document.getElementById("f_lang").value,
     value: currentValue,
     purchase: purchasePrice,
     purchaseDate: purchaseDate || null,
     shippingCost: document.getElementById("f_shipping")?.value || "",
     refurbCost: document.getElementById("f_refurb")?.value || "",
-    gradingCost: document.getElementById("f_grading_cost")?.value || "",
+    gradingCost: isLego ? "" : (document.getElementById("f_grading_cost")?.value || ""),
     valueHistory: history.length > 0 ? history : null,
-    imgData: imgBase64, imgDataBack: imgBase64Back, id: newId
+    imgData: imgBase64, imgDataBack: isLego ? null : imgBase64Back, id: newId,
+    // Lego-Felder
+    legoSetNum:      isLego ? document.getElementById("f_lego_setnum").value.trim() : null,
+    legoTheme:       isLego ? document.getElementById("f_lego_theme").value.trim() : null,
+    legoNumParts:    isLego ? document.getElementById("f_lego_parts").value : null,
+    legoNumMinifigs: isLego ? document.getElementById("f_lego_minifigs").value : null,
+    legoYear:        isLego ? document.getElementById("f_lego_year").value : null,
+    legoStatus:      isLego ? document.getElementById("f_lego_status").value : null
   };
   const tcg = state.activeTcg, section = state.activeSection;
   getItems(tcg, section).push(item);
@@ -2104,6 +2247,13 @@ function totalCosts(item) {
 
 // Such-String für ein Item bauen
 function buildItemSearchString(item) {
+  // Lego: Set-Nummer + Name (+ Status), das reicht für BrickLink/eBay
+  if (state.activeTcg === 'lg') {
+    const parts = [];
+    if (item.legoSetNum) parts.push('LEGO ' + item.legoSetNum);
+    if (item.name) parts.push(item.name);
+    return parts.join(' ');
+  }
   const isCard = (item.type === 'Karte RAW' || item.type === 'Karte Graded');
   const parts = [];
   if (isCard) {
@@ -2164,6 +2314,16 @@ function openMarketSearch(idx, evt) {
   const item = items[idx];
   if (!item) return;
   let url;
+  if (state.activeTcg === 'lg') {
+    // Lego: BrickLink-Katalogsuche. Mit Set-Nummer direkt, sonst per Name.
+    if (item.legoSetNum) {
+      url = `https://www.bricklink.com/v2/search.page?q=${encodeURIComponent(item.legoSetNum)}#T=A`;
+    } else {
+      url = `https://www.bricklink.com/v2/search.page?q=${encodeURIComponent(item.name || '')}#T=A`;
+    }
+    window.open(url, '_blank', 'noopener');
+    return;
+  }
   if (item.type === 'Karte Graded') {
     // eBay.de – nur verkaufte (LH_Sold=1) und beendete (LH_Complete=1).
     // Voller Suchstring, weil eBay damit gut umgehen kann.
@@ -2331,6 +2491,118 @@ async function loadAndSetLookupImage(url) {
     console.warn('Kartenbild konnte nicht geladen werden (CORS?):', e);
     // Kein Abbruch – Name/Set/Nummer sind ja trotzdem gesetzt
   }
+}
+
+// ===== LEGO SET-LOOKUP (über Supabase Edge Function -> Rebrickable) =====
+const REBRICKABLE_FN_URL = SUPABASE_URL + '/functions/v1/rebrickable-lookup';
+let _legoLookupResults = [];
+
+// Ruft die Edge Function auf. action: 'set' (Direktlookup) oder 'search' (Namenssuche)
+async function callRebrickable(payload) {
+  const res = await fetch(REBRICKABLE_FN_URL, {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json',
+      'Authorization': 'Bearer ' + SUPABASE_KEY,
+      'apikey': SUPABASE_KEY
+    },
+    body: JSON.stringify(payload)
+  });
+  if (!res.ok) throw new Error('Edge Function HTTP ' + res.status);
+  return res.json();
+}
+
+async function lookupLegoSet() {
+  if (state.activeTcg !== 'lg') return;
+  const input = document.getElementById('f_lego_setnum');
+  const nameInput = document.getElementById('f_name');
+  const raw = (input?.value || '').trim();
+  const resultsEl = document.getElementById('legoLookupResults');
+  const btn = document.getElementById('legoLookupBtn');
+  // Wenn keine Set-Nummer, aber ein Name da ist -> Namenssuche
+  const isNumber = /^\d{2,7}(-\d+)?$/.test(raw);
+  if (!raw && !(nameInput?.value || '').trim()) {
+    resultsEl.className = 'card-lookup-results open';
+    resultsEl.innerHTML = '<div class="lookup-status">Bitte Set-Nummer oder Namen eingeben.</div>';
+    return;
+  }
+  resultsEl.className = 'card-lookup-results open';
+  resultsEl.innerHTML = '<div class="lookup-status">Suche bei Rebrickable…</div>';
+  if (btn) btn.disabled = true;
+  try {
+    if (isNumber) {
+      // Direkter Set-Lookup
+      const data = await callRebrickable({ action: 'set', set_num: raw });
+      if (data.error === 'not_found') {
+        // Fallback: als Suche behandeln
+        resultsEl.innerHTML = '<div class="lookup-status">Kein Set mit dieser Nummer. Versuche Namenssuche…</div>';
+        return doLegoSearch(raw);
+      }
+      if (data.error) {
+        resultsEl.innerHTML = '<div class="lookup-status">Fehler: ' + (data.message || data.error) + '</div>';
+        return;
+      }
+      if (data.result) {
+        applyLegoResult(data.result);
+        resultsEl.className = 'card-lookup-results';
+        resultsEl.innerHTML = '';
+        return;
+      }
+    }
+    // Namens-/Stichwortsuche
+    const q = raw || (nameInput?.value || '').trim();
+    await doLegoSearch(q);
+  } catch(e) {
+    console.error('Lego-Lookup Fehler:', e);
+    resultsEl.innerHTML = '<div class="lookup-status">Suche fehlgeschlagen. Internet prüfen oder später erneut versuchen.</div>';
+  } finally {
+    if (btn) btn.disabled = false;
+  }
+}
+
+async function doLegoSearch(query) {
+  const resultsEl = document.getElementById('legoLookupResults');
+  const data = await callRebrickable({ action: 'search', query });
+  _legoLookupResults = data.results || [];
+  if (!_legoLookupResults.length) {
+    resultsEl.innerHTML = '<div class="lookup-status">Keine Treffer gefunden.</div>';
+    return;
+  }
+  resultsEl.className = 'card-lookup-results open';
+  resultsEl.innerHTML = _legoLookupResults.map((s, i) => {
+    const meta = [s.set_num, s.year, (s.num_parts ? s.num_parts + ' Teile' : '')].filter(Boolean).join(' · ');
+    return `<div class="lookup-result" onclick="applyLegoSearchResult(${i})">
+      ${s.img_url ? `<img src="${s.img_url}" alt="">` : ''}
+      <div class="lookup-result-info">
+        <div class="lookup-result-name">${s.name || ''}</div>
+        <div class="lookup-result-meta">${meta}</div>
+      </div>
+    </div>`;
+  }).join('');
+}
+
+function applyLegoSearchResult(i) {
+  const s = _legoLookupResults[i];
+  if (!s) return;
+  applyLegoResult(s);
+  const resultsEl = document.getElementById('legoLookupResults');
+  resultsEl.className = 'card-lookup-results';
+  resultsEl.innerHTML = '';
+}
+
+// Übernimmt ein Rebrickable-Set-Objekt in die Formularfelder
+function applyLegoResult(s) {
+  const setVal = (id, v) => { const el = document.getElementById(id); if (el && v != null) el.value = v; };
+  // Set-Nummer ohne "-1"-Suffix anzeigen, falls vorhanden
+  const cleanNum = (s.set_num || '').replace(/-\d+$/, '');
+  setVal('f_lego_setnum', cleanNum);
+  setVal('f_name', s.name || '');
+  setVal('f_lego_parts', s.num_parts || '');
+  setVal('f_lego_year', s.year || '');
+  // Themenwelt vom Server (theme_name) übernehmen, falls vorhanden
+  if (s.theme_name) setVal('f_lego_theme', s.theme_name);
+  if (s.img_url) loadAndSetLookupImage(s.img_url);
+  showSaveStatus('Set-Daten übernommen ✓');
 }
 
 function showDetail(idx) {
@@ -2882,15 +3154,46 @@ function renderCards() {
     return;
   }
   grid.innerHTML = arr.map(([origIdx, item]) => {
+    const isLego = state.activeTcg === 'lg';
+    const selected = origIdx === state.selectedIdx;
+    const valNum = parseFloat(item.value) || 0;
+    const needsLookup = valNum === 0;
+
+    if (isLego) {
+      const imgHtmlL = item.imgData
+        ? `<img src="${item.imgData}" alt="${item.name}">`
+        : `<i class="ti ti-building-bridge-2 placeholder"></i>`;
+      const legoTags = [];
+      if (item.legoNumParts) legoTags.push(`<span class="ctag ctag-parts">${item.legoNumParts} Teile</span>`);
+      if (item.legoNumMinifigs) legoTags.push(`<span class="ctag ctag-minifig">${item.legoNumMinifigs} Minifig.</span>`);
+      if (item.legoStatus) legoTags.push(`<span class="ctag ctag-status">${item.legoStatus}</span>`);
+      const lookupBtnsL = needsLookup ? `
+        <div class="lookup-btns" onclick="event.stopPropagation()">
+          <button class="lookup-btn" onclick="copyItemString(${origIdx}, event)" title="Suchstring kopieren"><i class="ti ti-copy"></i> Kopieren</button>
+          <button class="lookup-btn" onclick="openMarketSearch(${origIdx}, event)" title="Marktwert suchen"><i class="ti ti-search"></i> BrickLink</button>
+        </div>` : '';
+      return `<div class="card-tile ${selected?'selected':''}" onclick="selectCard(${origIdx})">
+        <button class="card-dup-btn" onclick="duplicateItem(${origIdx}, event)" title="Item duplizieren"><i class="ti ti-copy"></i></button>
+        <div class="card-img-box sealed">${imgHtmlL}</div>
+        <div class="card-tile-body">
+          <div class="card-tile-name">${item.name}</div>
+          ${item.legoTheme?`<div class="card-tile-sub">${item.legoTheme}</div>`:''}
+          ${item.legoSetNum?`<div class="card-tile-num">#${item.legoSetNum}${item.legoYear?` · ${item.legoYear}`:''}</div>`:''}
+          <div class="card-tile-value">${valNum.toFixed(2)} €</div>
+          <div class="card-tile-tags">
+            <span class="ctag ctag-type">${item.type}</span>
+            ${legoTags.join('')}
+          </div>${lookupBtnsL}
+        </div>
+      </div>`;
+    }
+
     const isSealed = !['Karte RAW','Karte Graded'].includes(item.type);
     const isGraded = item.type === 'Karte Graded';
     const boxCls = isSealed ? 'sealed' : isGraded ? 'graded' : '';
     const imgHtml = item.imgData
       ? `<img src="${item.imgData}" alt="${item.name}">`
       : `<i class="ti ti-playing-card placeholder"></i>`;
-    const selected = origIdx === state.selectedIdx;
-    const valNum = parseFloat(item.value) || 0;
-    const needsLookup = valNum === 0;
     const marketLabel = (item.type === 'Karte Graded') ? 'eBay' : 'Cardmarket';
     const lookupBtns = needsLookup ? `
         <div class="lookup-btns" onclick="event.stopPropagation()">
@@ -2949,27 +3252,27 @@ function showDetailPanel(idx) {
   const hasHistory = Array.isArray(item.valueHistory) && item.valueHistory.length >= 1;
   const chartId = "panelChart_" + idx;
   const fmtDate = (d) => { if (!d) return ''; const dt = new Date(d); return isNaN(dt) ? d : dt.toLocaleDateString('de-DE'); };
-  document.getElementById('detailScroll').innerHTML = `
-    <div class="detail-title">${item.name}</div>
-    <div class="detail-type-row">${item.type}${item.setName ? ` · ${item.setName}` : ''}${item.cardNumber ? ` – ${item.cardNumber}` : ''}</div>
-    ${item.imgData ? `<div class="detail-img-wrap"><img class="detail-img" src="${item.imgData}" alt="${item.name}"></div>` : ''}
-    ${item.imgDataBack ? `<div class="detail-img-wrap"><img class="detail-img" src="${item.imgDataBack}" alt="${item.name} Rückseite"></div>` : ''}
-    <div class="detail-value-row">
-      <div class="detail-value">${parseFloat(item.value).toFixed(2)} €</div>
-      ${hasCosts ? `<div class="detail-profit" style="color:${profit>=0?'#4ade80':'#f87171'}">${profit>=0?'▲':'▼'} ${Math.abs(profit).toFixed(2)} € ${profit>=0?'Gewinn':'Verlust'} · Gesamtkosten: ${costs.toFixed(2)} €</div>` : ''}
-    </div>
-    ${(parseFloat(item.value)||0) === 0 ? `
-      <div class="lookup-box">
-        <div class="lookup-box-label">Marktwert ermitteln</div>
-        <div class="lookup-btns">
-          <button class="lookup-btn" onclick="copyItemString(${idx}, event)"><i class="ti ti-copy"></i> Suchstring kopieren</button>
-          <button class="lookup-btn" onclick="openMarketSearch(${idx}, event)"><i class="ti ti-external-link"></i> ${item.type === 'Karte Graded' ? 'eBay Last Solds' : 'Cardmarket öffnen'}</button>
-        </div>
-      </div>` : ''}
-    <button class="update-value-btn" onclick="promptNewValue(${idx})"><i class="ti ti-trending-up"></i> Aktuellen Wert aktualisieren</button>
-    <button class="update-value-btn" onclick="openEditCostsModal(${idx})" style="margin-top:-6px"><i class="ti ti-edit"></i> Kosten bearbeiten</button>
-    ${hasHistory?`<div class="value-chart-wrap"><div class="value-chart-label">Wertverlauf</div><div class="value-chart-canvas-wrap"><canvas id="${chartId}"></canvas></div></div>`:""}
-    <div class="detail-fields">
+  const isLego = state.activeTcg === 'lg';
+
+  // Typzeile unter dem Titel
+  const typeRow = isLego
+    ? `${item.type}${item.legoTheme ? ` · ${item.legoTheme}` : ''}${item.legoSetNum ? ` – #${item.legoSetNum}` : ''}`
+    : `${item.type}${item.setName ? ` · ${item.setName}` : ''}${item.cardNumber ? ` – ${item.cardNumber}` : ''}`;
+
+  // Detail-Felder (Grid)
+  const detailFields = isLego ? `
+      <div class="dfield"><div class="dfield-label">Art des Items</div><div class="dfield-val">${item.type}</div></div>
+      ${item.legoSetNum ? `<div class="dfield"><div class="dfield-label">Set-Nummer</div><div class="dfield-val mono">${item.legoSetNum}</div></div>` : ''}
+      ${item.legoTheme ? `<div class="dfield"><div class="dfield-label">Themenwelt</div><div class="dfield-val" style="font-size:11px">${item.legoTheme}</div></div>` : ''}
+      ${item.legoYear ? `<div class="dfield"><div class="dfield-label">Jahr</div><div class="dfield-val">${item.legoYear}</div></div>` : ''}
+      ${item.legoNumParts ? `<div class="dfield"><div class="dfield-label">Teile</div><div class="dfield-val">${item.legoNumParts}</div></div>` : ''}
+      ${item.legoNumMinifigs ? `<div class="dfield"><div class="dfield-label">Minifiguren</div><div class="dfield-val">${item.legoNumMinifigs}</div></div>` : ''}
+      ${item.legoStatus ? `<div class="dfield"><div class="dfield-label">Status</div><div class="dfield-val">${item.legoStatus}</div></div>` : ''}
+      ${item.purchase ? `<div class="dfield"><div class="dfield-label">Einkaufspreis</div><div class="dfield-val">${parseFloat(item.purchase).toFixed(2)} €</div></div>` : ''}
+      ${item.purchaseDate ? `<div class="dfield"><div class="dfield-label">Kaufdatum</div><div class="dfield-val">${fmtDate(item.purchaseDate)}</div></div>` : ''}
+      ${item.shippingCost ? `<div class="dfield"><div class="dfield-label">Versand</div><div class="dfield-val">${parseFloat(item.shippingCost).toFixed(2)} €</div></div>` : ''}
+      ${item.refurbCost ? `<div class="dfield"><div class="dfield-label">Aufbereitung</div><div class="dfield-val">${parseFloat(item.refurbCost).toFixed(2)} €</div></div>` : ''}
+    ` : `
       <div class="dfield"><div class="dfield-label">Art des Items</div><div class="dfield-val">${item.type}</div></div>
       <div class="dfield"><div class="dfield-label">Sprache</div><div class="dfield-val">${item.lang||'—'}</div></div>
       ${item.cardNumber ? `<div class="dfield"><div class="dfield-label">Kartennummer</div><div class="dfield-val mono">${item.cardNumber}</div></div>` : ''}
@@ -2981,18 +3284,54 @@ function showDetailPanel(idx) {
       ${item.shippingCost ? `<div class="dfield"><div class="dfield-label">Versand</div><div class="dfield-val">${parseFloat(item.shippingCost).toFixed(2)} €</div></div>` : ''}
       ${item.refurbCost ? `<div class="dfield"><div class="dfield-label">Aufbereitung</div><div class="dfield-val">${parseFloat(item.refurbCost).toFixed(2)} €</div></div>` : ''}
       ${item.gradingCost ? `<div class="dfield"><div class="dfield-label">Grading</div><div class="dfield-val">${parseFloat(item.gradingCost).toFixed(2)} €</div></div>` : ''}
+    `;
+
+  // Tags
+  const tagsRow = isLego ? `
+        <span class="dtag type">${item.type}</span>
+        ${item.legoNumParts ? `<span class="dtag" style="background:rgba(227,0,11,0.12);border-color:rgba(227,0,11,0.3);color:#ff6b6b">${item.legoNumParts} Teile</span>` : ''}
+        ${item.legoStatus ? `<span class="dtag" style="background:rgba(96,165,250,0.12);border-color:rgba(96,165,250,0.3);color:#93c5fd">${item.legoStatus}</span>` : ''}
+    ` : `
+        <span class="dtag type">${item.type}</span>
+        ${item.lang ? `<span class="dtag lang">${item.lang}</span>` : ''}
+        ${item.condition ? `<span class="dtag cond">${item.condition}</span>` : ''}
+    `;
+
+  // Marktwert-Box bei value=0
+  const marketBtnLabel = isLego ? 'BrickLink öffnen' : (item.type === 'Karte Graded' ? 'eBay Last Solds' : 'Cardmarket öffnen');
+
+  document.getElementById('detailScroll').innerHTML = `
+    <div class="detail-title">${item.name}</div>
+    <div class="detail-type-row">${typeRow}</div>
+    ${item.imgData ? `<div class="detail-img-wrap"><img class="detail-img" src="${item.imgData}" alt="${item.name}"></div>` : ''}
+    ${item.imgDataBack ? `<div class="detail-img-wrap"><img class="detail-img" src="${item.imgDataBack}" alt="${item.name} Rückseite"></div>` : ''}
+    <div class="detail-value-row">
+      <div class="detail-value">${parseFloat(item.value).toFixed(2)} €</div>
+      ${hasCosts ? `<div class="detail-profit" style="color:${profit>=0?'#4ade80':'#f87171'}">${profit>=0?'▲':'▼'} ${Math.abs(profit).toFixed(2)} € ${profit>=0?'Gewinn':'Verlust'} · Gesamtkosten: ${costs.toFixed(2)} €</div>` : ''}
+    </div>
+    ${(parseFloat(item.value)||0) === 0 ? `
+      <div class="lookup-box">
+        <div class="lookup-box-label">Marktwert ermitteln</div>
+        <div class="lookup-btns">
+          <button class="lookup-btn" onclick="copyItemString(${idx}, event)"><i class="ti ti-copy"></i> Suchstring kopieren</button>
+          <button class="lookup-btn" onclick="openMarketSearch(${idx}, event)"><i class="ti ti-external-link"></i> ${marketBtnLabel}</button>
+        </div>
+      </div>` : ''}
+    <button class="update-value-btn" onclick="promptNewValue(${idx})"><i class="ti ti-trending-up"></i> Aktuellen Wert aktualisieren</button>
+    <button class="update-value-btn" onclick="openEditCostsModal(${idx})" style="margin-top:-6px"><i class="ti ti-edit"></i> Kosten bearbeiten</button>
+    ${hasHistory?`<div class="value-chart-wrap"><div class="value-chart-label">Wertverlauf</div><div class="value-chart-canvas-wrap"><canvas id="${chartId}"></canvas></div></div>`:""}
+    <div class="detail-fields">
+      ${detailFields}
     </div>
     <div class="detail-tags-section">
       <div class="detail-tags-label">Tags</div>
       <div class="detail-tags-row">
-        <span class="dtag type">${item.type}</span>
-        ${item.lang ? `<span class="dtag lang">${item.lang}</span>` : ''}
-        ${item.condition ? `<span class="dtag cond">${item.condition}</span>` : ''}
+        ${tagsRow}
       </div>
     </div>
     ${state.activeSection === 'collection' ? `<button class="update-value-btn" onclick="moveItem(${idx}, 'forsale')" style="background:rgba(96,165,250,0.1);border-color:rgba(96,165,250,0.3);color:#60a5fa"><i class="ti ti-tag"></i> Zum Verkauf verschieben</button>` : ''}
     ${state.activeSection === 'forsale' ? `<button class="update-value-btn" onclick="moveItem(${idx}, 'collection')" style="background:rgba(96,165,250,0.1);border-color:rgba(96,165,250,0.3);color:#60a5fa"><i class="ti ti-album"></i> In Sammlung verschieben</button>` : ''}
-    <button class="update-value-btn" onclick="exportSingleSalesImage(${idx})" style="background:rgba(31,180,201,0.12);border-color:rgba(31,180,201,0.35);color:#1FB4C9"><i class="ti ti-share"></i> Als Verkaufsgrafik exportieren</button>
+    ${!isLego ? `<button class="update-value-btn" onclick="exportSingleSalesImage(${idx})" style="background:rgba(31,180,201,0.12);border-color:rgba(31,180,201,0.35);color:#1FB4C9"><i class="ti ti-share"></i> Als Verkaufsgrafik exportieren</button>` : ''}
   `;
   document.getElementById('detailActions').innerHTML = `
     <button class="daction-btn" onclick="closeDetail()">Schließen</button>
@@ -3032,7 +3371,7 @@ function scrollToTop() {
 
 // Setzt die Hintergrund-Klasse am body abhängig vom aktiven TCG
 function setTcgBackground(tcg) {
-  document.body.classList.remove('tcg-pk', 'tcg-op', 'tcg-yg');
+  document.body.classList.remove('tcg-pk', 'tcg-op', 'tcg-yg', 'tcg-lg');
   document.body.classList.add('tcg-' + tcg);
 }
 
