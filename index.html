@@ -2633,20 +2633,21 @@ async function buildSalesCard(item) {
   ctx.textAlign = 'left';
   ctx.fillText('PREIS', 40, ty + 10);
 
-  // Logo-Branding unten links auf hellem Badge
-  const logo = await loadImg('valoralogo.png');
-  if (logo) {
-    const lh = 70;                       // Logo-Höhe
-    const lw = lh * (logo.width / logo.height);
-    const padB = 16;
-    const badgeX = 40, badgeY = H - 40 - lh - padB;
-    // heller abgerundeter Hintergrund passend zum Logo
-    ctx.fillStyle = '#E8F7F9';
-    roundRect(ctx, badgeX, badgeY, lw + padB*2, lh + padB*2, 16);
-    ctx.fill();
-    ctx.drawImage(logo, badgeX + padB, badgeY + padB, lw, lh);
+  // Großes, transparentes Watermark ganz unten über (fast) die ganze Breite
+  const wm = await loadImg('valorawatermark.png');
+  if (wm) {
+    const maxWmW = W - 80;                 // fast volle Breite
+    const maxWmH = 170;                    // kompakter, damit Preis frei bleibt
+    const ratio = wm.width / wm.height;
+    let wmW = maxWmW;
+    let wmH = wmW / ratio;
+    if (wmH > maxWmH) { wmH = maxWmH; wmW = wmH * ratio; }
+    const wmX = (W - wmW) / 2;             // zentriert
+    const wmY = H - wmH - 24;
+    ctx.globalAlpha = 0.6;
+    ctx.drawImage(wm, wmX, wmY, wmW, wmH);
+    ctx.globalAlpha = 1;
   } else {
-    // Fallback: Text
     ctx.fillStyle = 'rgba(255,255,255,0.3)';
     ctx.font = '600 30px Sora, sans-serif';
     ctx.textAlign = 'left';
