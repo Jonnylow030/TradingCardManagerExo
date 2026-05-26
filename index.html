@@ -1168,7 +1168,7 @@ body:has(#app.show) .mobile-header { /* placeholder; eigentliche Regel in @media
           <option value="name-desc">Sortieren: Name (Z → A)</option>
           <option value="type">Sortieren: Art des Items</option>
         </select>
-        <button class="topbar-btn" id="exportBtn" onclick="exportSalesImages()" style="display:none"><i class="ti ti-share"></i> WhatsApp-Export</button>
+        <button class="topbar-btn" id="exportBtn" style="display:none"><i class="ti ti-share"></i> WhatsApp-Export</button>
         <button class="topbar-btn primary" onclick="openFormModal()"><i class="ti ti-plus"></i> Item hinzufügen</button>
       </div>
     </div>
@@ -1207,7 +1207,7 @@ body:has(#app.show) .mobile-header { /* placeholder; eigentliche Regel in @media
       <button class="modal-close" onclick="closeFormModal()"><i class="ti ti-x"></i></button>
     </div>
     <form id="itemForm" onsubmit="saveItem(event)">
-      <div class="form-group">
+      <div class="form-group" id="typeGroup">
         <label class="form-label">Art des Items</label>
         <select class="form-control" id="f_type" onchange="onTypeChange()">
           <option value="Karte RAW">Karte RAW</option>
@@ -1296,7 +1296,7 @@ body:has(#app.show) .mobile-header { /* placeholder; eigentliche Regel in @media
           <option>Chinesisch</option><option>Spanisch</option><option>Französisch</option><option>Italienisch</option>
         </select>
       </div>
-      <div class="row2">
+      <div class="row2" id="valueRow">
         <div class="form-group">
           <label class="form-label">Aktueller Wert (€)</label>
           <input type="number" class="form-control" id="f_value" placeholder="0.00 (optional)" step="0.01" min="0">
@@ -1310,7 +1310,7 @@ body:has(#app.show) .mobile-header { /* placeholder; eigentliche Regel in @media
         <label class="form-label">Kaufdatum</label>
         <input type="date" class="form-control" id="f_purchase_date">
       </div>
-      <div class="form-row">
+      <div class="form-row" id="costsRow">
         <div class="form-group">
           <label class="form-label">Versandkosten (€)</label>
           <input type="number" class="form-control" id="f_shipping" placeholder="0.00" step="0.01" min="0">
@@ -1870,7 +1870,8 @@ function openFormModal() {
   const cfg = TCG_CONFIG[state.activeTcg];
   const secCfg = SECTIONS.find(s=>s.id===state.activeSection);
   const isLego = state.activeTcg === 'lg';
-  document.getElementById("formModalTitle").textContent = `Neues Item – ${cfg.label}`;
+  const isWishlist = state.activeSection === 'wishlist';
+  document.getElementById("formModalTitle").textContent = isWishlist ? `Wunschkarte – ${cfg.label}` : `Neues Item – ${cfg.label}`;
   document.getElementById("formSubmitBtn").className = `submit-btn ${cfg.submitCls}`;
   document.getElementById("purchaseGroup").style.display = secCfg.showPurchase ? "block" : "none";
   // Typ-Auswahl passend zum Bereich befüllen
@@ -1882,6 +1883,25 @@ function openFormModal() {
     const el = document.getElementById(id);
     if (el) el.style.display = isLego ? 'none' : '';
   });
+
+  // === WUNSCHLISTE: reduziertes Formular (nur Name, Set, Foto) ===
+  // Diese Gruppen werden in der Wunschliste komplett versteckt:
+  const wishlistHide = ['typeGroup','rarityGroup','cardNumberGroup','condGroup','langGroup',
+                        'valueRow','purchaseGroup','purchaseDateGroup','costsRow','gradingCostGroup','backImgGroup'];
+  if (isWishlist) {
+    wishlistHide.forEach(id => { const el = document.getElementById(id); if (el) el.style.display = 'none'; });
+    // Typ fix auf "Karte RAW" setzen (für interne Logik/Bilddarstellung)
+    const typeSel = document.getElementById('f_type');
+    if (typeSel) {
+      // sicherstellen, dass "Karte RAW" als Option existiert (TCG-Modus hat sie)
+      if (![...typeSel.options].some(o => o.value === 'Karte RAW')) {
+        typeSel.insertAdjacentHTML('afterbegin', '<option value="Karte RAW">Karte RAW</option>');
+      }
+      typeSel.value = 'Karte RAW';
+    }
+    // Set-Gruppe sicher sichtbar (auch falls Lego-Logik sie versteckt hätte)
+    const setG = document.getElementById('setGroup'); if (setG) setG.style.display = '';
+  }
   // Lego-Lookup-Ergebnisse zurücksetzen + Felder leeren
   if (isLego) {
     ['f_lego_setnum','f_lego_theme','f_lego_parts','f_lego_minifigs','f_lego_year'].forEach(id => {
@@ -3030,6 +3050,102 @@ async function exportSalesImages() {
   showSaveStatus(`${count} Grafik(en) erstellt ✓`);
 }
 
+// ===== WUNSCHLISTE: Foto-Collage exportieren (nur Bilder, 2 nebeneinander) =====
+// Lädt eine Bildquelle (Base64 oder URL) als HTMLImageElement
+function loadImageEl(src) {
+  return new Promise((resolve, reject) => {
+    const img = new Image();
+    img.crossOrigin = 'anonymous';      // für externe URLs (Rebrickable etc.)
+    img.referrerPolicy = 'no-referrer';
+    img.onload = () => resolve(img);
+    img.onerror = () => reject(new Error('Bild konnte nicht geladen werden: ' + src.slice(0, 60)));
+    img.src = src;
+  });
+}
+
+async function exportWishlistImages() {
+  const items = getItems(state.activeTcg, 'wishlist').filter(it => it.imgData || it.legoImgUrl);
+  if (!items.length) {
+    alert('Keine Karten mit Foto in der Wunschliste.');
+    return;
+  }
+  showSaveStatus(`Erstelle Collage aus ${items.length} Foto(s)…`);
+
+  // Layout-Parameter (in Pixeln, hohe Auflösung für scharfen Druck/Share)
+  const COLS = 2;
+  const MAX_ROWS_PER_IMG = 4;            // 2x4 = 8 Karten pro exportiertem Bild
+  const CARD_W = 600;                    // Breite einer Karte
+  const CARD_H = Math.round(CARD_W * 3 / 2); // Pokémon-Karten ~2:3 -> 900
+  const GAP = 30;                        // Abstand zwischen Karten
+  const PAD = 40;                        // Außenrand
+  const cardsPerImg = COLS * MAX_ROWS_PER_IMG;
+
+  // Bilder vorladen (parallel), fehlerhafte überspringen
+  const loaded = [];
+  for (const it of items) {
+    try {
+      const img = await loadImageEl(it.imgData || it.legoImgUrl);
+      loaded.push(img);
+    } catch(e) {
+      console.warn('Übersprungen:', e.message);
+    }
+  }
+  if (!loaded.length) {
+    showSaveStatus('Keine Bilder ladbar (CORS?).', true);
+    return;
+  }
+
+  // In Gruppen zu je cardsPerImg aufteilen
+  const groups = [];
+  for (let i = 0; i < loaded.length; i += cardsPerImg) {
+    groups.push(loaded.slice(i, i + cardsPerImg));
+  }
+
+  let exported = 0;
+  for (let g = 0; g < groups.length; g++) {
+    const group = groups[g];
+    const rows = Math.ceil(group.length / COLS);
+    const W = PAD * 2 + COLS * CARD_W + (COLS - 1) * GAP;
+    const H = PAD * 2 + rows * CARD_H + (rows - 1) * GAP;
+    const canvas = document.createElement('canvas');
+    canvas.width = W; canvas.height = H;
+    const ctx = canvas.getContext('2d');
+    // Hintergrund
+    ctx.fillStyle = '#0c0e1a';
+    ctx.fillRect(0, 0, W, H);
+
+    group.forEach((img, idx) => {
+      const col = idx % COLS;
+      const row = Math.floor(idx / COLS);
+      const x = PAD + col * (CARD_W + GAP);
+      const y = PAD + row * (CARD_H + GAP);
+      // Bild proportional in die Karten-Box einpassen (contain), zentriert
+      const ratio = img.width / img.height;
+      let dw = CARD_W, dh = CARD_W / ratio;
+      if (dh > CARD_H) { dh = CARD_H; dw = CARD_H * ratio; }
+      const dx = x + (CARD_W - dw) / 2;
+      const dy = y + (CARD_H - dh) / 2;
+      ctx.drawImage(img, dx, dy, dw, dh);
+    });
+
+    // Als Blob herunterladen
+    const blob = await new Promise(res => canvas.toBlob(res, 'image/jpeg', 0.92));
+    if (!blob) continue;
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    const suffix = groups.length > 1 ? `_${g + 1}von${groups.length}` : '';
+    a.href = url;
+    a.download = `Wunschliste_${TCG_CONFIG[state.activeTcg].label}${suffix}.jpg`;
+    document.body.appendChild(a);
+    a.click();
+    document.body.removeChild(a);
+    URL.revokeObjectURL(url);
+    exported++;
+    await new Promise(r => setTimeout(r, 350));
+  }
+  showSaveStatus(`Collage exportiert ✓ (${exported} Bild(er))`);
+}
+
 function exportToWord() {
   const tcg = state.activeTcg, items = getItems(tcg, "forsale");
   const cfg = TCG_CONFIG[tcg], total = items.reduce((a,b)=>a+(parseFloat(b.value)||0),0);
@@ -3106,10 +3222,20 @@ function renderSectionTabs() {
       <i class="ti ${s.icon}"></i>${s.label}
     </button>`;
   }).join('');
-  // Export button
+  // Export button – kontextabhängig
   const exportBtn = document.getElementById('exportBtn');
   const secC = SECTIONS.find(s => s.id === state.activeSection);
-  exportBtn.style.display = secC.showExport ? 'flex' : 'none';
+  if (state.activeSection === 'wishlist') {
+    exportBtn.style.display = 'flex';
+    exportBtn.innerHTML = '<i class="ti ti-photo-share"></i> Fotos exportieren';
+    exportBtn.onclick = exportWishlistImages;
+  } else if (secC.showExport) {
+    exportBtn.style.display = 'flex';
+    exportBtn.innerHTML = '<i class="ti ti-share"></i> WhatsApp-Export';
+    exportBtn.onclick = exportSalesImages;
+  } else {
+    exportBtn.style.display = 'none';
+  }
 }
 
 function renderStats() {
